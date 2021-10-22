@@ -13,16 +13,22 @@
         <p><input type = "submit" value = "submit" /></p>
       </form>
       <br>
-      GET user like:
-      <form action = "http://localhost:5000/type_diff_users" method = "get">
+      GET next arangement:
+      <form action = "http://localhost:5000/next_arangements" method = "get">
         <p><input type = "submit" value = "submit" /></p>
       </form>>
       <br>
+      RESERVED arangement:
+      <form action = "http://localhost:5000/next_arangements" method = "POST">
+        <p>id_ara<input type = "number" name = "arangement_id" /></p>
+        <p>persons<input type = "number" name = "number_of_persons" /></p>
+        <p><input type = "submit" value = "submit" /></p>
+      </form>>
       <br>
       PUT user like:
       <form action = "http://localhost:5000/type_diff_users/1" method = "put">
         <p><input type = "submit" value = "submit" /></p>
-      </form>>
+      </form>
       <br>
       Arangemet:
       <form action = "http://localhost:5000/add_arangement" method = "post">
@@ -34,9 +40,18 @@
         <p>price<input type = "number" name = "price" /></p>
         <p><input type = "submit" value = "submit" /></p>
       </form>
-      get user by type:
-      <form action = "http://localhost:5000/users_type" method = "GET">
-        <p><input type = "text" name = "type" /></p>
+      get my profile:
+      <form action = "http://localhost:5000/my_profile" method = "GET">
+        <p><input type = "submit" value = "submit" /></p>
+     </form>
+     set type:
+      <form action = "http://localhost:5000/my_profile" method = "POST">
+        <p><input type="text" name="type"></p>
+        <p><input type = "submit" value = "submit" /></p>
+     </form>
+     set description:
+      <form action = "http://localhost:5000/update_description/5" method = "POST">
+        <p><input type="text" name="description"></p>
         <p><input type = "submit" value = "submit" /></p>
      </form>
    </body>

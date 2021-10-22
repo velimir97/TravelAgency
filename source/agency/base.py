@@ -140,6 +140,9 @@ rusija = ArangementModel(start_date = datetime.now() + timedelta(days=20),
                            admin_id = 7
 )
 db.session.add(rusija)
+rusija.tourists.append(maja)
+rusija.tourists.append(djole)
+rusija.tourists.append(bole)
 db.session.commit()
 #7
 cg = ArangementModel(start_date = datetime.now() + timedelta(days=250),

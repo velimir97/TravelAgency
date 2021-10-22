@@ -11,6 +11,17 @@ user_post_args.add_argument("password1", type=str, help="Password is required", 
 user_post_args.add_argument("password2", type=str, help="Password is required", required=True)
 user_post_args.add_argument("desired_type", type=str, help="Desired type is required", required=True)
 
+user_update_args = reqparse.RequestParser()
+user_update_args.add_argument("name", type=str)
+user_update_args.add_argument("surname", type=str)
+user_update_args.add_argument("email", type=str)
+user_update_args.add_argument("username", type=str)
+user_update_args.add_argument("password1", type=str)
+user_update_args.add_argument("password2", type=str)
+
+user_update_type_args = reqparse.RequestParser()
+user_update_type_args.add_argument("type", type=str, help="Type is required", required=True)
+
 # define a login parser 
 user_login_args = reqparse.RequestParser()
 user_login_args.add_argument("username", type=str, help="Username is required", required=True)
@@ -18,6 +29,10 @@ user_login_args.add_argument("password", type=str, help="Password is required", 
 
 user_type_args = reqparse.RequestParser()
 user_type_args.add_argument("type", type=str, help="Type is required", required=True)
+
+user_reserve_args = reqparse.RequestParser()
+user_reserve_args.add_argument("arangement_id", type=int, help="Id is required", required=True)
+user_reserve_args.add_argument("number_of_persons", type=int, help="Number of persons is required", required=True)
 
 # defining a parser for entering arrangements 
 arangement_post_args = reqparse.RequestParser()
@@ -36,6 +51,14 @@ arangement_update_args.add_argument("destination", type=str)
 arangement_update_args.add_argument("number_of_seats", type=int)
 arangement_update_args.add_argument("price", type=int)
 arangement_update_args.add_argument("guide_id", type=int)
+
+arangement_search_args = reqparse.RequestParser()
+arangement_search_args.add_argument("start", help="Date of start arangement is required", required=True)
+arangement_search_args.add_argument("end", help="Date of end arangement is required", required=True)
+arangement_search_args.add_argument("destination", type=str, help="Destination is required", required=True)
+
+arangement_update_desc_args = reqparse.RequestParser()
+arangement_update_desc_args.add_argument("description", help="Description is required", required=True)
 
 # restriction on user return
 user_resource_fields = {
