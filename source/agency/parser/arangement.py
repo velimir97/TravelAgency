@@ -44,10 +44,6 @@ arangement_search_args.add_argument("start", help="Date of start arangement is r
 arangement_search_args.add_argument("end", help="Date of end arangement is required")
 arangement_search_args.add_argument("destination", type=str, help="Destination is required")
 
-arangement_update_desc_args = reqparse.RequestParser()
-arangement_update_desc_args.add_argument("description", help="Description is required", required=True)
-
-
 # restriction on arangement return
 # odvojiti za razlicite metode
 arangement_resource_fields = {

@@ -175,7 +175,7 @@ def different_type_users():
 # POST: does not accept the request for upgrade
 @app.route('/admin/upgrade_type/<int:user_id>', methods = ["PUT", "POST"])
 @login_required
-def update_user_current_type(user_id):
+def upgrade_user_current_type(user_id):
     chack_user_is_admin(current_user)
 
     if request.method == 'PUT':
