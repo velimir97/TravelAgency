@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from flask_mail import Message
 from flask import jsonify, request
 
+
 def chack_user_is_admin(user):
     if user.current_type != "admin":
         abort(401, message="This request is not allowed to you")
