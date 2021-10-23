@@ -16,5 +16,5 @@ login_manager.init_app(app)
 
 mail = Mail(app)
 
-from agency import routes
+from agency.routes import all, admin, tourist, guide
 from agency import base
