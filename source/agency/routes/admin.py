@@ -1,8 +1,8 @@
 from agency import app, db, mail
 from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
-from agency.parser.arangement import arangement_create_args, arangement_resource_fields, arangement_update_args, chack_create_arangement_data
-from agency.parser.user import user_type_args, user_resource_fields
+from agency.parser.arangement_parser import arangement_create_args, arangement_resource_fields, arangement_update_args, chack_create_arangement_data
+from agency.parser.user_parser import user_type_args, user_resource_fields
 from agency.models import ArangementModel, UserModel
 from datetime import datetime, timedelta
 from flask_mail import Message

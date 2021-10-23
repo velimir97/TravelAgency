@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
 from flask import request, jsonify
 from agency.models import UserModel, ArangementModel
-from agency.parser.arangement import arangement_resource_fields
+from agency.parser.arangement_parser import arangement_resource_fields
 
 
 def chack_user_is_guide(user):

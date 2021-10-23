@@ -1,7 +1,7 @@
 from agency import app, db
 from flask_restful import abort, marshal_with, marshal
-from agency.parser.user import user_resource_fields, user_registration_args, user_login_args, chack_registration_data
-from agency.parser.arangement import arangement_resource_fields
+from agency.parser.user_parser import user_resource_fields, user_registration_args, user_login_args, chack_registration_data
+from agency.parser.arangement_parser import arangement_resource_fields
 from agency.models import UserModel, ArangementModel
 from flask_login import login_user, logout_user, login_required
 from flask import jsonify, request

@@ -2,8 +2,8 @@ from agency import app, db
 from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
 from flask import request, jsonify
-from agency.parser.user import user_resource_fields, user_reserve_args, user_update_args, chack_registration_data
-from agency.parser.arangement import arangement_resource_fields, arangement_search_args, chack_create_arangement_data
+from agency.parser.user_parser import user_resource_fields, user_reserve_args, user_update_args, chack_registration_data
+from agency.parser.arangement_parser import arangement_resource_fields, arangement_search_args, chack_create_arangement_data
 from agency.models import UserModel, ArangementModel
 from datetime import datetime, timedelta
 
