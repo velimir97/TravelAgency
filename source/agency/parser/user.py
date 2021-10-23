@@ -13,10 +13,10 @@ user_registration_args.add_argument("password2", type=str, help="Password is req
 user_registration_args.add_argument("desired_type", type=str, help="Desired type is required", required=True)
 
 def chack_registration_data(args):
-    if len(args['name']) > 50:
+    if len(args['name']) > 50 or len(args['name']) < 2:
         return False, "Name is not correct"
     
-    if len(args['surname']) > 50:
+    if len(args['surname']) > 50 or len(args['surname']) < 2:
         return False, "Surname is not correct"
 
     regex = r'[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Z|a-z]{2,}'
@@ -37,7 +37,7 @@ def chack_registration_data(args):
         return False, "Username exists ..."
 
     # check that both passwords are the same
-    if args['password1'] != args['password2']:
+    if args['password1'] != args['password2'] or len(args['password1']) < 4:
         return False, "Passwords is not equal"
     
     if args['desired_type'] not in ['admin', 'tourist', 'guide']:

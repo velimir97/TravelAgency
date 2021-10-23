@@ -28,11 +28,11 @@ arangement_update_desc_args.add_argument("description", help="Description is req
 
 
 # restriction on arangement return
+# odvojiti za razlicite metode
 arangement_resource_fields = {
     'id': fields.Integer,
     'start_date': fields.DateTime,
     'end_date': fields.DateTime,
     'destination': fields.String,
     'price': fields.Integer,
-    'free_seats': fields.Integer
 }
