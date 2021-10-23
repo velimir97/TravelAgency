@@ -14,7 +14,7 @@ def user_registration():
     # parsing the obtained arguments
     args = user_registration_args.parse_args()
     try:
-        # check the data is correct
+        # check the args data is correct
         chack_result, chack_message = chack_registration_data(args)
         if not chack_result:
             return jsonify({"message" : chack_message}), 409
@@ -28,6 +28,7 @@ def user_registration():
         db.session.commit()
         return jsonify({"message" : "Successful registration"}), 201
     except Exception as e:
+        print(e)
         return jsonify({"message" : "Internal server error"}), 500
 
 
@@ -80,4 +81,3 @@ def all_arangements():
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
-

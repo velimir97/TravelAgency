@@ -46,7 +46,7 @@ sara.set_password("sara123")
 db.session.add(sara)
 db.session.commit()
 #7
-velja = UserModel(name="Velimir", surname="Bicanin", email="velja@bi.com", username="veljase", desired_type="admin", current_type="admin")
+velja = UserModel(name="Velimir", surname="Bicanin", email="velimirbicanin@gmail.com", username="veljase", desired_type="admin", current_type="admin")
 velja.set_password("velja123")
 db.session.add(velja)
 db.session.commit()

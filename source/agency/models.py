@@ -19,7 +19,6 @@ class UserModel(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     desired_type = db.Column(db.String(15), nullable=False)
     current_type = db.Column(db.String(15), nullable=False)
-    #admin_arangements = db.relationship('ArangementModel', backref='admin', lazy=True)
     guide_arangements = db.relationship('ArangementModel', backref='guide', lazy=True)
     tourist_arangements = db.relationship("ArangementModel", secondary=tourist_arangement_table, lazy=True, backref=db.backref('tourists', lazy = 'dynamic'))
 
@@ -57,13 +56,12 @@ class ArangementModel(db.Model):
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
     description = db.Column(db.Text, nullable=False, unique=True)
-    destination = db.Column(db.String, nullable=False)
+    destination = db.Column(db.String(50), nullable=False)
     number_of_seats = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Integer, nullable=False)
     guide_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     admin_id = db.Column(db.Integer, nullable=False)
     free_seats = db.Column(db.Integer, nullable=False)
-    #tourists = db.relationship("UserModel", secondary=tourist_arangement_table, lazy=True)
 
     def __repr__(self):
         return f"Arangement(start = {start_date}, end = {end_date}, description = {description})"
