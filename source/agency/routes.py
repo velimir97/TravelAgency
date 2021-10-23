@@ -103,7 +103,6 @@ def add_arangement():
 @login_required
 @marshal_with(arangement_resource_fields)
 def update_arangement(arangement_id):
-    print(current_user.username)
     if current_user.current_type != "admin":
         abort(401, message="This request is not allowed to you")
 
@@ -170,13 +169,15 @@ def delete_arangement(arangement_id):
     return "Success", 201
 
 # route: http://127.0.0.1:5000/arangements, method GET
-# processing requests to get arangements
+# processing requests to get all arangements (all)
 @app.route("/arangements")
 def all_arangements():
     arangements = ArangementModel.query.all()
     arangement_list = [marshal(a.to_json(), arangement_resource_fields) for a in arangements]
     return jsonify(arangement_list), 200
 
+# route: http://127.0.0.1:5000/my_arangements, method GET
+# processes the request for retrieval of its arrangements (all)
 @app.route("/my_arangements")
 @login_required
 def my_arangements():
@@ -197,6 +198,9 @@ def my_arangements():
         guide_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in guide_arangements]
         return jsonify(guide_arangements_list), 200
 
+
+# route: http://127.0.0.1:5000/arangement/arangement_id, method GET
+# processes the request to retrieve the arrangement by id(admin)
 @app.route('/arangement/<int:arangement_id>')
 @login_required
 def info_arangement(arangement_id):
@@ -206,6 +210,9 @@ def info_arangement(arangement_id):
     arangement = ArangementModel.query.filter_by(id=arangement_id).first()
     return jsonify(arangement.to_json()), 200
 
+
+# route: http://127.0.0.1:5000//type_diff_users, method GET
+# handles the retrieval request of users who want to upgrade the type (admin)
 @app.route('/type_diff_users')
 @login_required
 def different_type_users():
@@ -221,6 +228,10 @@ def different_type_users():
     list_user_like_guide = [marshal(u.to_json(), user_resource_fields) for u in user_like_guide]
     return jsonify(list_user_like_admin1 + list_user_like_admin2 + list_user_like_guide), 200
 
+
+# route: http://127.0.0.1:5000//type_diff_users, methods POST, PUT
+# PUT: accepts the request for promotion
+# POST: does not accept the request for promotion
 @app.route('/type_diff_users/<int:user_id>', methods = ["POST", "PUT"])
 @login_required
 def info_user_type(user_id):
@@ -256,6 +267,8 @@ def info_user_type(user_id):
 
         return "Success", 200
 
+# route: http://127.0.0.1:5000/users, method GET
+# processing requests to get all users (admin)
 @app.route('/users')
 @login_required
 def all_users():
@@ -266,6 +279,9 @@ def all_users():
     user_list = [marshal(u.to_json(), user_resource_fields) for u in users]
     return jsonify(user_list), 200
 
+
+# route: http://127.0.0.1:5000/users_type, method GET
+# takes users by type (admin)
 @app.route('/users_type')
 @login_required
 def all_users_by_type():
@@ -289,7 +305,7 @@ def all_users_by_type():
         guides = UserModel.query.filter_by(current_type=args['type'])
         guides_with_arangements = []
         for guide in guides:
-            guide_arangements = [a.to_json() for a in guide.guide_arangements if a.end_date < datetime.now()] #  promeni na manje
+            guide_arangements = [a.to_json() for a in guide.guide_arangements if a.end_date < datetime.now()]
             guide_json = marshal(guide.to_json(), user_resource_fields)
             guide_json['tourist_arangements'] = guide_arangements
             guides_with_arangements.append(guide_json)
@@ -298,6 +314,9 @@ def all_users_by_type():
     
     return "Type is wrong", 404
 
+# route: http://127.0.0.1:5000/next_arangements, methods GET, POST
+# GET: takes all arrangements that the user can reserve (tourist)
+# POST: reserve arrangement (tourist)
 @app.route("/next_arangements", methods = ["GET", "POST"])
 @login_required
 def next_possible_arrangements():
@@ -334,6 +353,8 @@ def next_possible_arrangements():
 
         return f"Success! Price of arrangement is {price}", 200
 
+# route: http://127.0.0.1:5000/search_arangements, method GET
+# takes arrangements by date and destination (tourist)
 @app.route("/search_arangements")
 @login_required
 def search_arangements():
@@ -345,6 +366,10 @@ def search_arangements():
     list_arangements = [a.to_json() for a in arangements if a.start_date > args['start'] and a.end_date < args['end']]
     return jsonify(list_arangements), 200
 
+# route: http://127.0.0.1:5000/my_profile, methods GET, PUT, POST (tourist)
+# GET: retrieves tourist profile information
+# PUT: update tourist profile
+# POST: sends a request for promotion
 @app.route("/my_profile", methods = ["GET", "PUT","POST"])
 @login_required
 def update_my_profile():
@@ -388,6 +413,9 @@ def update_my_profile():
         db.session.commit()
         return jsonify({"message": "Success!"}), 200
 
+
+# route: http://127.0.0.1:5000/update_description/<int:arangement_id>, method PUT (guide)
+# updates the description of the arrangement
 @app.route("/update_description/<int:arangement_id>", methods=["PUT"])
 @login_required
 def update_description(arangement_id):
@@ -405,13 +433,16 @@ def update_description(arangement_id):
         db.session.commit()
         return jsonify({"message": "Success!"}), 200
 
-@app.route("/update_type", methods=["PUT"])
+
+# route: http://127.0.0.1:5000/update_type, methods POST (guide)
+# sends a request for promotion
+@app.route("/update_type", methods=["POST"])
 @login_required
 def guide_update_type():
     if current_user.current_type != 'guide':
         abort(401, message="This request is not allowed to you")
 
-    if request.method == "PUT":
+    if request.method == "POST":
         guide = UserModel.query.filter_by(id=current_user.id).first()
         guide.desired_type = 'admin'
         db.session.commit()

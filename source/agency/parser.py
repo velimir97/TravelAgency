@@ -1,6 +1,9 @@
 from flask_restful import reqparse, fields
 import datetime
 
+def chack_user_type(user, allowed_type):
+    return user.current_type == allowed_type
+
 # defining a registration parser 
 user_post_args = reqparse.RequestParser()
 user_post_args.add_argument("name", type=str, help="Name is required", required=True)
