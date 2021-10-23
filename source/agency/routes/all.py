@@ -1,43 +1,35 @@
 from agency import app, db
 from flask_restful import abort, marshal_with, marshal
-from agency.parser.user import user_resource_fields, user_post_args, user_login_args
+from agency.parser.user import user_resource_fields, user_registration_args, user_login_args, chack_registration_data
 from agency.parser.arangement import arangement_resource_fields
 from agency.models import UserModel, ArangementModel
 from flask_login import login_user, logout_user, login_required
 from flask import jsonify
 
 
-# route: http://127.0.0.1:5000/singin, method POST
+# route: http://127.0.0.1:5000/sing_in, method POST
 # processing the request for registration of a new user 
-@app.route('/signin', methods=['POST'])
-@marshal_with(user_resource_fields)
-def sign_in():
+@app.route('/sign_in', methods=['POST'])
+def user_registration():
 
-    # parsing the obtained arguments
-    args = user_post_args.parse_args()
+    try:
+        # parsing the obtained arguments
+        args = user_registration_args.parse_args()
 
-    # check if the user(email) is already registered 
-    result = UserModel.query.filter_by(email=args['email']).first()
-    if result:
-        abort(409, message="The email exists ...")
+        chack_result, chack_message = chack_registration_data(args)
+        if not chack_result:
+            return {"message" : chack_message}, 409
 
-    # check if the user(username) is already registered 
-    result = UserModel.query.filter_by(username=args['username']).first()
-    if result:
-        abort(409, message="The username exists ... ")
-    
-    # check that both passwords are the same
-    if args['password1'] != args['password2']:
-        abort(409, message="Passwords is not equal")
-
-    # creating and entering a new user
-    user = UserModel(name=args['name'], surname=args['surname'], email=args['email'],
-                    username=args['username'], desired_type=args['desired_type'], current_type='tourist'
-    )
-    user.set_password(args['password1'])
-    db.session.add(user)
-    db.session.commit()
-    return user, 201
+        # creating and entering a new user
+        user = UserModel(name=args['name'], surname=args['surname'], email=args['email'],
+                        username=args['username'], desired_type=args['desired_type'], current_type='tourist'
+        )
+        user.set_password(args['password1'])
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"message" : "Successful registration"}), 201
+    except Exception as e:
+        return jsonify({"message" : "Internal server error"}), 500
 
 # route: http://127.0.0.1:5000/login, method POST
 # processing user login requests
