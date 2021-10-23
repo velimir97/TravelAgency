@@ -4,7 +4,7 @@ from agency.parser.user import user_resource_fields, user_registration_args, use
 from agency.parser.arangement import arangement_resource_fields
 from agency.models import UserModel, ArangementModel
 from flask_login import login_user, logout_user, login_required
-from flask import jsonify
+from flask import jsonify, request
 
 
 # route: http://127.0.0.1:5000/singin, method POST
@@ -70,8 +70,12 @@ def logout():
 @app.route("/arangements")
 def all_arangements():
     try:
-        arangements = ArangementModel.query.all()
-        arangement_list = [marshal(a.to_json(), arangement_resource_fields) for a in arangements]
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 5, type=int)
+        sort = request.args.get('sort', 'id', type=str)
+
+        arangements = ArangementModel.query.filter_by().order_by(sort).paginate(page=page, per_page=per_page)
+        arangement_list = [marshal(a.to_json(), arangement_resource_fields) for a in arangements.items]
         return jsonify(arangement_list), 200
     except Exception as e:
         print(e)
