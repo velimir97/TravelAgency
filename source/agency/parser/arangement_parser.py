@@ -1,8 +1,8 @@
 from flask_restful import reqparse, fields
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
-# defining a parser for entering arrangements
+# defining a parser for entering arangements
 arangement_args = reqparse.RequestParser()
 arangement_args.add_argument("start", help="Date of start arangement is required", required=True)
 arangement_args.add_argument("end", help="Date of end arangement is required", required=True)
@@ -12,13 +12,20 @@ arangement_args.add_argument("number_of_seats", type=int, help="Number of seats 
 arangement_args.add_argument("price", type=int, help="Price is required", required=True)
 
 def check_arangement_data(args):
-    try:
-        if args['start'] != None:
+    if args['start'] and args['end']:
+        try:
             datetime.fromisoformat(args['start'])
-        if args['end'] != None:
             datetime.fromisoformat(args['end'])
-    except ValueError:
-        return False, "Date is not correct"
+        except ValueError:
+            return False, "Date is not correct"
+
+        if datetime.fromisoformat(args['start']) < datetime.now() + timedelta(days=5):
+            return False, "Start date is not correct"
+
+        if datetime.fromisoformat(args['end']) < datetime.now() + timedelta(days=5) or datetime.fromisoformat(args['end']) < datetime.fromisoformat(args['start']):
+            return False, "End date is not corrent"
+    elif args['start'] or args['end']:
+        return False, "Both dates must be entered"
 
     if args['description'] != None and len(args['description']) < 10:
         return False, "Description is not correct"
@@ -41,12 +48,11 @@ arangement_update_args.add_argument("price", type=int)
 arangement_update_args.add_argument("guide_id", type=int)
 
 arangement_search_args = reqparse.RequestParser()
-arangement_search_args.add_argument("start", help="Date of start arangement is required")
-arangement_search_args.add_argument("end", help="Date of end arangement is required")
+arangement_search_args.add_argument("start", help="Start date is required")
+arangement_search_args.add_argument("end", help="End date is required")
 arangement_search_args.add_argument("destination", type=str, help="Destination is required")
 
 # restriction on arangement return
-# odvojiti za razlicite metode
 arangement_resource_fields = {
     'id': fields.Integer,
     'start_date': fields.DateTime,

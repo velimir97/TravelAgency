@@ -4,15 +4,16 @@ from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-db.drop_all()
-'''
-name_database = "travel_agency_database"
-con = psycopg2.connect(user='postgres', password='postgres', host='localhost')
-con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-cursor = con.cursor()
-sql_create_database = "create database " + name_database + ";"
-cursor.execute(sql_create_database)
-'''
+try:
+    name_database = "travel_agency_database"
+    con = psycopg2.connect(user='postgres', password='postgres', host='localhost')
+    con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cursor = con.cursor()
+    sql_create_database = "create database " + name_database + ";"
+    cursor.execute(sql_create_database)
+except Exception as e:
+    print("Database " + name_database + " already exists")
+    db.drop_all()
 
 db.create_all()
 #1
@@ -74,9 +75,9 @@ engleska = ArangementModel(start_date = datetime.now() + timedelta(days=100),
                            number_of_seats = 55,
                            free_seats = 55,
                            price = 555,
-                           guide_id = 3,
                            admin_id = 7
 )
+engleska.guide = ana
 db.session.add(engleska)
 db.session.commit()
 #2
@@ -99,9 +100,9 @@ spanija = ArangementModel(start_date = datetime.now() + timedelta(days=4),
                            number_of_seats = 10,
                            free_seats = 10,
                            price = 355,
-                           guide_id = 3,
                            admin_id = 7
 )
+spanija.guide = ana
 db.session.add(spanija)
 db.session.commit()
 #4
@@ -124,9 +125,9 @@ nemacka = ArangementModel(start_date = datetime.now() + timedelta(days=55),
                            number_of_seats = 112,
                            free_seats = 112,
                            price = 420,
-                           guide_id = 3,
                            admin_id = 7
 )
+nemacka.guide = ana
 db.session.add(nemacka)
 db.session.commit()
 #6

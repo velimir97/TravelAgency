@@ -11,7 +11,7 @@ def is_guide(user):
         abort(401, message="This request is not allowed to you")
 
 # route: http://127.0.0.1:5000/update_description/<int:arangement_id>
-# PUT: updates the description of the arrangement
+# PUT: updates the description of the arangement
 @app.route("/guide/update_description/<int:arangement_id>", methods=["PUT"])
 @login_required
 def update_description(arangement_id):
@@ -25,25 +25,25 @@ def update_description(arangement_id):
             # check the description is valid
             if guide_description == "none" or len(guide_description) < 10:
                 return jsonify({"message" : "Description is wrong"}), 409
-
-            # check if the arrangement is mine
+            
+            # check if the arangement is mine
             my_arangements = [a.id for a in current_user.guide_arangements]
             if arangement_id not in my_arangements:
-                return jsonify({"message" : "You are not the guide on this arrangement"}), 409
+                return jsonify({"message" : "You are not the guide of this arangement"}), 409
 
             # memorizing a new description
             arangement = ArangementModel.query.filter_by(id=arangement_id).first()
             arangement.description = guide_description
             db.session.commit()
-            return jsonify({"message": "Description is update!"}), 200
+            return jsonify({"message": "Description is updated!"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/guide/update_type
-# POST: sends a request for promotion
-@app.route("/guide/update_type", methods=["POST"])
+# route: http://127.0.0.1:5000/guide/type_req
+# POST: send a request for promotion
+@app.route("/guide/type_req", methods=["POST"])
 @login_required
 def requirement_upgrade():
     is_guide(current_user)
@@ -60,14 +60,14 @@ def requirement_upgrade():
 
 
 # route: http://127.0.0.1:5000/guide/my_arangements
-# GET: processes the request for retrieval of its arrangements
+# GET: processes the request for retrieval of its arangements
 @app.route("/guide/my_arangements")
 @login_required
 def guides_arangements():
     is_guide(current_user)
 
     try:
-        user = UserModel.query.filter_by(id=3).first()
+        user = UserModel.query.filter_by(id=current_user.id).first()
         guide_arangements = user.guide_arangements
         guide_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in guide_arangements]
         return jsonify(guide_arangements_list), 200

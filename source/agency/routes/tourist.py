@@ -14,11 +14,11 @@ def is_tourist(user):
 
 
 # route: http://127.0.0.1:5000/tourist/reserve_arangement
-# GET: takes all arrangements that the user can reserve (tourist)
-# POST: reserve arrangement (tourist)
+# GET: takes all arangements that the user can reserve (tourist)
+# POST: reserve arangement (tourist)
 @app.route("/tourist/reserve_arangement", methods = ["GET", "POST"])
 @login_required
-def next_possible_arrangements():
+def next_possible_arangements():
     is_tourist(current_user)
 
     if request.method == "GET":
@@ -42,10 +42,10 @@ def next_possible_arrangements():
             arangement = ArangementModel.query.filter_by(id=args['arangement_id']).first()
             # check to see if it's too late
             if arangement.start_date < datetime.now() + timedelta(days=5):
-                return jsonify({"message" : "You are late for this arrangement"}), 400
+                return jsonify({"message" : "You are late for this arangement"}), 400
             # check for seats
             if args['number_of_persons'] > arangement.free_seats:
-                return jsonify({"message" : "The arrangement is full"}), 400
+                return jsonify({"message" : "The arangement is full"}), 400
             
             # update free_seats
             arangement.free_seats -= args['number_of_persons']
@@ -58,7 +58,7 @@ def next_possible_arrangements():
             if args['number_of_persons'] > 3:
                 price -= (args['number_of_persons'] - 3) * 0.1 * arangement.price
 
-            msg = "Success! Price of arrangement is " + str(price)
+            msg = "Success! Price of arangement is " + str(price)
             return jsonify({"message" : msg}), 200
         except Exception as e:
             print(e)
@@ -66,7 +66,7 @@ def next_possible_arrangements():
 
 
 # route: http://127.0.0.1:5000/tourist/search_arangements
-# GET: takes arrangements by date and destination
+# GET: takes arangements by date and destination
 @app.route("/tourist/search_arangements")
 @login_required
 def search_arangements():
@@ -119,11 +119,11 @@ def update_my_profile():
     if request.method == "PUT":
         args = user_update_args.parse_args()
         try:
-            # set the args['desired_type'] so that the function chack_registration_data can be called
+            # set the args['desired_type'] so that the function check_registration_data can be called
             args['desired_type'] = "tourist"
-            chack_res, chack_msg = chack_registration_data(args)
-            if not chack_res:
-                return jsonify({"message" : chack_msg}), 409
+            check_res, check_msg = check_user_data(args)
+            if not check_res:
+                return jsonify({"message" : check_msg}), 409
 
             tourist = UserModel.query.filter_by(id=current_user.id).first()
             if args['name']:
@@ -152,14 +152,14 @@ def update_my_profile():
             tourist = UserModel.query.filter_by(id=current_user.id).first()
             tourist.desired_type = upgrade_type
             db.session.commit()
-            return jsonify({"message": "Request is send!"}), 200
+            return jsonify({"message": "Request is sent!"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
 
 
 # route: http://127.0.0.1:5000/tourist/my_arangements
-# GET: processes the request for retrieval of its arrangements
+# GET: processes the request for retrieval of its arangements
 @app.route("/tourist/my_arangements")
 @login_required
 def my_tourist_arangements():

@@ -7,6 +7,7 @@ from agency.models import ArangementModel, UserModel
 from datetime import datetime, timedelta
 from flask_mail import Message
 from flask import jsonify, request
+from math import ceil
 
 
 def is_admin(user):
@@ -52,7 +53,7 @@ def create_new_arangement():
 # route: http://127.0.0.1:5000/admin/update_arangement/<int:arangement_id>
 # PATCH: processing requests to update arangement by id
 # DELETE: processing requests to delete arangement by id
-# GET: processes the request to retrieve the arrangement by id
+# GET: processing request to retrieve the arangement by id
 @app.route("/admin/arangement/<int:arangement_id>", methods = ['PATCH', 'DELETE', 'GET'])
 @login_required
 def process_arangement_by_id(arangement_id):
@@ -60,15 +61,15 @@ def process_arangement_by_id(arangement_id):
 
     if request.method == "PATCH":
         try:
-            # checking that the arangement exists
+            # check if the arangement exists
             arangement = ArangementModel.query.filter_by(id=arangement_id).first()
             if not arangement:
-                return jsonify({"message" : "Arangement is not exists"}), 404
+                return jsonify({"message" : "Arangement does't not exist"}), 404
             
-            # check if the arrangement starts in five days
+            # check if the arangement starts in five days
             time_now = datetime.now()
             if (arangement.start_date - time_now < timedelta(days=5)):
-                return jsonify({"message" : "Five days until the arrangement"}), 404
+                return jsonify({"message" : "Five days until the arangement"}), 404
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -77,7 +78,7 @@ def process_arangement_by_id(arangement_id):
         args = arangement_update_args.parse_args()
 
         try:
-            # check the args data is correct
+            # check if the args data is correct
             check_result, check_message = check_arangement_data(args)
             if not check_result:
                 return jsonify({"message" : check_message}), 409
@@ -98,6 +99,8 @@ def process_arangement_by_id(arangement_id):
             if args['guide_id'] != None:
                 # updating the guide values
                 user_guide = UserModel.query.filter_by(id=args['guide_id']).first()
+                if not user_guide or user_guide.current_type != 'guide':
+                    return jsonify({"message" : "Guide is not found"}), 404
                 for guide_arangement in user_guide.guide_arangements:
                     # check if the guide is available at the required time
                     if ((arangement.start_date > guide_arangement.start_date and arangement.start_date < guide_arangement.end_date) or 
@@ -107,7 +110,7 @@ def process_arangement_by_id(arangement_id):
                 arangement.guide_id = args['guide_id']
             
             db.session.commit()
-            return jsonify({"message" : "Arangement is update"}), 200
+            return jsonify({"message" : "Arangement is updated"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -116,25 +119,25 @@ def process_arangement_by_id(arangement_id):
         try:
             arangement = ArangementModel.query.filter_by(id=arangement_id).first()
             if not arangement:
-                return jsonify({"message" : "Arangement is not exists"}), 404
+                return jsonify({"message" : "Arangement does't exist"}), 404
 
-            # check if the arrangement starts in five days
+            # check if the arangement starts in five days
             time_now = datetime.now()
             if (arangement.start_date - time_now < timedelta(days=5)):
-                return jsonify({"message" : "Five days until the arrangement"}), 404
+                return jsonify({"message" : "Five days until the arangement"}), 404
                 
             # an email is sent to users
             for tourist in arangement.tourists:
                 try:
-                    msg = Message("The arrangement was canceled.", sender="velimirbicanin@gmail.com", recipients=[tourist.email])
+                    msg = Message("The arangement was canceled.", sender=app.config.get("MAIL_USERNAME") , recipients=[tourist.email])
                     mail.send(msg)
                 except Exception as e:
                     print(e)
-                    return jsonify({"message" : "Internal server error"}), 500
+                    return jsonify({"message" : "Mails not sent"}), 500
 
             db.session.delete(arangement)
             db.session.commit()
-            return jsonify({"message" : "Arrangement has been deleted"}), 200
+            return jsonify({"message" : "Arangement has been deleted"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -151,8 +154,8 @@ def process_arangement_by_id(arangement_id):
 
     return jsonify({"message" : "Method not found"}), 404
 
-# route: http://127.0.0.1:5000/admin/users_reqs, method GET
-# handles the retrieval request of users who want to upgrade the type
+# route: http://127.0.0.1:5000/admin/users_reqs
+# GET: handles the retrieval request of users who want to upgrade the type
 @app.route('/admin/users_reqs')
 @login_required
 def get_users_requirement():
@@ -173,10 +176,10 @@ def get_users_requirement():
         return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/admin/upgrade_type
+# route: http://127.0.0.1:5000/admin/response_type
 # PUT: accepts the request for upgrade
 # POST: does not accept the request for upgrade
-@app.route('/admin/upgrade_type/<int:user_id>', methods = ["PUT", "POST"])
+@app.route('/admin/response_type/<int:user_id>', methods = ["PUT", "POST"])
 @login_required
 def process_user_requirement(user_id):
     is_admin(current_user)
@@ -188,17 +191,17 @@ def process_user_requirement(user_id):
             if not user:
                 return jsonify({"message" : "User not exists"}), 404
 
-            # user type upgrade
-            user.current_type = user.desired_type
-            db.session.commit()
-            
             # sending an email to the user
             try:
-                msg = Message("Your request has been accepted", sender=current_user.email, recipients=[user.email])
+                msg = Message("Your request has been accepted", sender=app.config.get("MAIL_USERNAME"), recipients=[user.email])
                 mail.send(msg)
             except Exception as e:
                 print(e)
                 return jsonify({"message" : "Mail not sent"}), 500
+            
+            # user type upgrade
+            user.current_type = user.desired_type
+            db.session.commit()
             
             return jsonify({"message" : "Success"}), 200
         except Exception as e:
@@ -206,7 +209,10 @@ def process_user_requirement(user_id):
             return jsonify({"message" : "Internal server error"}), 500
 
     elif request.method == 'POST':
+        msg = request.args.get("message", "", type=str)
         try:
+            if msg == "":
+                return jsonify({"message" : "Message is require"}), 409
             # check the user exist
             user = UserModel.query.filter_by(id=user_id).first()
             if not user:
@@ -218,7 +224,7 @@ def process_user_requirement(user_id):
 
             # sending an email to the user
             try:
-                msg = Message(request.form['message'], sender=current_user.email, recipients=[user.email])
+                msg = Message(msg, sender=app.config.get("MAIL_USERNAME"), recipients=[user.email])
                 mail.send(msg)
             except Exception as e:
                 print(e)
@@ -246,7 +252,11 @@ def all_users_by_type():
     if users_type == "all":
         # getting all users
         try:
-            users = UserModel.query.filter_by().order_by(sort).paginate(page=page, per_page=per_page)
+            users = UserModel.query.filter_by()
+            if page > ceil(users.count()/per_page):
+                return jsonify({"message": "Page is not found"}), 404
+
+            users = users.order_by(sort).paginate(page=page, per_page=per_page)
             user_list = [marshal(u.to_json(), user_resource_fields) for u in users.items]
             return jsonify(user_list), 200
         except Exception as e:
@@ -275,7 +285,7 @@ def all_users_by_type():
             for guide in guides:
                 guide_arangements = [a.to_json() for a in guide.guide_arangements if a.end_date < datetime.now()]
                 guide_json = marshal(guide.to_json(), user_resource_fields)
-                guide_json['tourist_arangements'] = guide_arangements
+                guide_json['guide_arangements'] = guide_arangements
                 guides_with_arangements.append(guide_json)
             
             return jsonify(guides_with_arangements), 200
@@ -287,11 +297,11 @@ def all_users_by_type():
 
 
 # route: http://127.0.0.1:5000/my_arangements
-# GET: processes the request for retrieval of its arrangements
+# GET: processes the request for retrieval of its arangements
 @app.route("/admin/my_arangements")
-@login_required
+#@login_required
 def admins_arangements():
-    is_admin(current_user)
+    #is_admin(current_user)
     try:
         admin_arangements = ArangementModel.query.filter_by(admin_id = current_user.id)
         admin_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in admin_arangements]

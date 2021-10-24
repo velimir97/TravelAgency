@@ -25,8 +25,8 @@ def check_user_data(args):
             return False, "Email is not correct"
 
         # check if the user(email) is already registered 
-        chack_email = UserModel.query.filter_by(email=args['email']).first()
-        if chack_email:
+        check_email = UserModel.query.filter_by(email=args['email']).first()
+        if check_email:
             return False, "Email exists ..."
 
     if args['username']:
@@ -34,13 +34,13 @@ def check_user_data(args):
             return False, "Username is not correct"
 
         # check if the user(username) is already registered 
-        chack_username = UserModel.query.filter_by(username=args['username']).first()
-        if chack_username:
+        check_username = UserModel.query.filter_by(username=args['username']).first()
+        if check_username:
             return False, "Username exists ..."
 
     # check that both passwords are the same
     if args['password1'] != None and args['password2'] != None and (args['password1'] != args['password2'] or len(args['password1']) < 4):
-        return False, "Passwords is not equal"
+        return False, "Passwords are not equal"
     
     if args['desired_type'] != None and args['desired_type'] not in ['admin', 'tourist', 'guide']:
         return False, "Desired type is not correct"

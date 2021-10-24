@@ -2,8 +2,8 @@ from agency import db, login_manager
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# table for connecting tourists and arrangements 
-# meny to meny
+# table for connecting tourists and arangements 
+# many to many
 tourist_arangement_table = db.Table('tourist_arangement_table',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
     db.Column('ang_id', db.Integer, db.ForeignKey('arangement.id'), primary_key=True)
@@ -26,7 +26,7 @@ class UserModel(UserMixin, db.Model):
     def set_password(self, password):
         self.password = generate_password_hash(password, method='sha256')
 
-    def check_password_hash(self, password):
+    def check_password(self, password):
         return check_password_hash(self.password, password)
 
     def __repr__(self):
@@ -55,7 +55,7 @@ class ArangementModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
-    description = db.Column(db.Text, nullable=False, unique=True)
+    description = db.Column(db.Text, nullable=False)
     destination = db.Column(db.String(50), nullable=False)
     number_of_seats = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Integer, nullable=False)
