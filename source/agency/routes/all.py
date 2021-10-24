@@ -1,6 +1,6 @@
 from agency import app, db
 from flask_restful import abort, marshal_with, marshal
-from agency.parser.user_parser import user_resource_fields, user_registration_args, user_login_args, chack_registration_data
+from agency.parser.user_parser import user_resource_fields, user_registration_args, user_login_args, check_user_data
 from agency.parser.arangement_parser import arangement_resource_fields
 from agency.models import UserModel, ArangementModel
 from flask_login import login_user, logout_user, login_required
@@ -15,7 +15,7 @@ def user_registration():
     args = user_registration_args.parse_args()
     try:
         # check the args data is correct
-        chack_result, chack_message = chack_registration_data(args)
+        chack_result, chack_message = check_user_data(args)
         if not chack_result:
             return jsonify({"message" : chack_message}), 409
 

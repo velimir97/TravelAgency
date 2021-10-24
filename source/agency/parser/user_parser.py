@@ -12,7 +12,7 @@ user_registration_args.add_argument("password1", type=str, help="Password is req
 user_registration_args.add_argument("password2", type=str, help="Password is required", required=True)
 user_registration_args.add_argument("desired_type", type=str, help="Desired type is required", required=True)
 
-def chack_registration_data(args):
+def check_user_data(args):
     if args['name'] != None and (len(args['name']) > 50 or len(args['name']) < 2):
         return False, "Name is not correct"
     

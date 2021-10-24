@@ -6,7 +6,7 @@ from agency.models import UserModel, ArangementModel
 from agency.parser.arangement_parser import arangement_resource_fields
 
 
-def chack_user_is_guide(user):
+def is_guide(user):
     if user.current_type != "guide":
         abort(401, message="This request is not allowed to you")
 
@@ -15,18 +15,23 @@ def chack_user_is_guide(user):
 @app.route("/guide/update_description/<int:arangement_id>", methods=["PUT"])
 @login_required
 def update_description(arangement_id):
-    chack_user_is_guide(current_user)
+    is_guide(current_user)
 
     if request.method == "PUT":
         try:
+            # parsing the obtained argument
             guide_description = request.args.get("description", "none", type=str)
+
+            # check the description is valid
             if guide_description == "none" or len(guide_description) < 10:
                 return jsonify({"message" : "Description is wrong"}), 409
 
+            # check if the arrangement is mine
             my_arangements = [a.id for a in current_user.guide_arangements]
             if arangement_id not in my_arangements:
                 return jsonify({"message" : "You are not the guide on this arrangement"}), 409
 
+            # memorizing a new description
             arangement = ArangementModel.query.filter_by(id=arangement_id).first()
             arangement.description = guide_description
             db.session.commit()
@@ -40,8 +45,8 @@ def update_description(arangement_id):
 # POST: sends a request for promotion
 @app.route("/guide/update_type", methods=["POST"])
 @login_required
-def upgrade_guide_type():
-    chack_user_is_guide(current_user)
+def requirement_upgrade():
+    is_guide(current_user)
 
     if request.method == "POST":
         try:
@@ -58,8 +63,8 @@ def upgrade_guide_type():
 # GET: processes the request for retrieval of its arrangements
 @app.route("/guide/my_arangements")
 @login_required
-def my_guide_arangements():
-    chack_user_is_guide(current_user)
+def guides_arangements():
+    is_guide(current_user)
 
     try:
         user = UserModel.query.filter_by(id=3).first()

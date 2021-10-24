@@ -2,13 +2,13 @@ from agency import app, db
 from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
 from flask import request, jsonify
-from agency.parser.user_parser import user_resource_fields, user_reserve_args, user_update_args, chack_registration_data
-from agency.parser.arangement_parser import arangement_resource_fields, arangement_search_args, chack_create_arangement_data
+from agency.parser.user_parser import user_resource_fields, user_reserve_args, user_update_args, check_user_data
+from agency.parser.arangement_parser import arangement_resource_fields, arangement_search_args, check_arangement_data
 from agency.models import UserModel, ArangementModel
 from datetime import datetime, timedelta
 
 
-def chack_user_is_tourist(user):
+def is_tourist(user):
     if user.current_type != "tourist":
         abort(401, message="This request is not allowed to you")
 
@@ -19,7 +19,7 @@ def chack_user_is_tourist(user):
 @app.route("/tourist/reserve_arangement", methods = ["GET", "POST"])
 @login_required
 def next_possible_arrangements():
-    chack_user_is_tourist(current_user)
+    is_tourist(current_user)
 
     if request.method == "GET":
         try:
@@ -40,16 +40,20 @@ def next_possible_arrangements():
             user = UserModel.query.filter_by(id=current_user.id).first()
 
             arangement = ArangementModel.query.filter_by(id=args['arangement_id']).first()
+            # check to see if it's too late
             if arangement.start_date < datetime.now() + timedelta(days=5):
                 return jsonify({"message" : "You are late for this arrangement"}), 400
+            # check for seats
             if args['number_of_persons'] > arangement.free_seats:
                 return jsonify({"message" : "The arrangement is full"}), 400
             
+            # update free_seats
             arangement.free_seats -= args['number_of_persons']
             arangement.tourists.append(user)
 
             db.session.commit()
 
+            # price calculation
             price = args['number_of_persons'] * arangement.price
             if args['number_of_persons'] > 3:
                 price -= (args['number_of_persons'] - 3) * 0.1 * arangement.price
@@ -66,12 +70,15 @@ def next_possible_arrangements():
 @app.route("/tourist/search_arangements")
 @login_required
 def search_arangements():
-    chack_user_is_tourist(current_user)
+    is_tourist(current_user)
 
+    # parsing the obtained argument
     args = arangement_search_args.parse_args()
     
     try:
         arangements = ArangementModel.query.all()
+
+        # check args
         if args['start']:
             try:
                 datetime.fromisoformat(args['start'])
@@ -100,7 +107,7 @@ def search_arangements():
 @app.route("/tourist/my_profile", methods = ["GET", "PUT","POST"])
 @login_required
 def update_my_profile():
-    chack_user_is_tourist(current_user)
+    is_tourist(current_user)
 
     if request.method == "GET":
         try:
@@ -156,7 +163,7 @@ def update_my_profile():
 @app.route("/tourist/my_arangements")
 @login_required
 def my_tourist_arangements():
-    chack_user_is_tourist()
+    is_tourist()
     try:
         user = UserModel.query.filter_by(id=current_user.id).first()
         tourist_arangements = user.tourist_arangements

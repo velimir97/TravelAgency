@@ -1,16 +1,17 @@
 from flask_restful import reqparse, fields
 from datetime import datetime
 
-# defining a parser for entering arrangements 
-arangement_create_args = reqparse.RequestParser()
-arangement_create_args.add_argument("start", help="Date of start arangement is required", required=True)
-arangement_create_args.add_argument("end", help="Date of end arangement is required", required=True)
-arangement_create_args.add_argument("description", type=str, help="Description is required", required=True)
-arangement_create_args.add_argument("destination", type=str, help="Destination is required", required=True)
-arangement_create_args.add_argument("number_of_seats", type=int, help="Number of seats is required", required=True)
-arangement_create_args.add_argument("price", type=int, help="Price is required", required=True)
 
-def chack_create_arangement_data(args):
+# defining a parser for entering arrangements
+arangement_args = reqparse.RequestParser()
+arangement_args.add_argument("start", help="Date of start arangement is required", required=True)
+arangement_args.add_argument("end", help="Date of end arangement is required", required=True)
+arangement_args.add_argument("description", type=str, help="Description is required", required=True)
+arangement_args.add_argument("destination", type=str, help="Destination is required", required=True)
+arangement_args.add_argument("number_of_seats", type=int, help="Number of seats is required", required=True)
+arangement_args.add_argument("price", type=int, help="Price is required", required=True)
+
+def check_arangement_data(args):
     try:
         if args['start'] != None:
             datetime.fromisoformat(args['start'])
