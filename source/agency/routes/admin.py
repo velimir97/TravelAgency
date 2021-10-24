@@ -15,8 +15,8 @@ def is_admin(user):
         abort(401, message="This request is not allowed to you")
 
 
-# route: http://127.0.0.1:5000/admin/add_arangement, method POST
-# processing requests to add arangements
+# route: http://127.0.0.1:5000/admin/add_arangement
+# POST: processing requests to add arangements
 @app.route("/admin/add_arangement", methods = ['POST'])
 @login_required
 def create_new_arangement():
@@ -299,9 +299,9 @@ def all_users_by_type():
 # route: http://127.0.0.1:5000/my_arangements
 # GET: processes the request for retrieval of its arangements
 @app.route("/admin/my_arangements")
-#@login_required
+@login_required
 def admins_arangements():
-    #is_admin(current_user)
+    is_admin(current_user)
     try:
         admin_arangements = ArangementModel.query.filter_by(admin_id = current_user.id)
         admin_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in admin_arangements]

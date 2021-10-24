@@ -4,6 +4,7 @@ from flask_restful import abort, marshal_with, marshal
 from flask import request, jsonify
 from agency.models import UserModel, ArangementModel
 from agency.parser.arangement_parser import arangement_resource_fields
+from datetime import datetime, timedelta
 
 
 def is_guide(user):
@@ -31,8 +32,11 @@ def update_description(arangement_id):
             if arangement_id not in my_arangements:
                 return jsonify({"message" : "You are not the guide of this arangement"}), 409
 
-            # memorizing a new description
             arangement = ArangementModel.query.filter_by(id=arangement_id).first()
+            if arangement.start_date < datetime.now() + timedelta(days=5):
+                return jsonify({"message" : "Start date is wrong"}), 409
+
+            # memorizing a new description
             arangement.description = guide_description
             db.session.commit()
             return jsonify({"message": "Description is updated!"}), 200

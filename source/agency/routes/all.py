@@ -8,8 +8,8 @@ from flask import jsonify, request
 from math import ceil
 
 
-# route: http://127.0.0.1:5000/singin, method POST
-# processing the request for registration of a new user 
+# route: http://127.0.0.1:5000/singin
+# POST: processing the request for registration of a new user 
 @app.route('/signin', methods=['POST'])
 def user_registration():
     # parsing the obtained arguments

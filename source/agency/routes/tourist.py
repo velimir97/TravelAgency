@@ -162,7 +162,7 @@ def update_my_profile():
 # GET: processes the request for retrieval of its arangements
 @app.route("/tourist/my_arangements")
 @login_required
-def my_tourist_arangements():
+def tourists_arangements():
     is_tourist()
     try:
         user = UserModel.query.filter_by(id=current_user.id).first()
