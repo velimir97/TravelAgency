@@ -57,7 +57,7 @@ ceca.set_password("ceca123")
 db.session.add(ceca)
 db.session.commit()
 #9
-marko = UserModel(name="Marko", surname="Dunjic", email="mare@dunja.com", username="dunja", desired_type="guide", current_type="tourist")
+marko = UserModel(name="Marko", surname="Dunjic", email="mare@dunja.com", username="dunja", desired_type="guide", current_type="guide")
 marko.set_password("marko123")
 db.session.add(marko)
 db.session.commit()

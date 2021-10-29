@@ -50,7 +50,45 @@ def create_new_arangement():
         return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/admin/update_arangement/<int:arangement_id>
+# route: http://127.0.0.1:5000/admin/free_guides/<int:arangement_id>
+# GET: processing request to retrieving free guides at the time of the arrangement
+@app.route("/admin/free_guides/<int:arangement_id>")
+@login_required
+def free_guides(arangement_id):
+    is_admin(current_user)
+
+    try:
+        # check if the arangement exists
+        arangement = ArangementModel.query.filter_by(id=arangement_id).first()
+        if not arangement:
+            return jsonify({"message" : "Arangement does't not exist"}), 404
+
+        # check if this arrangement is from the current admin
+        if arangement.admin_id != 7:
+            return jsonify({"message" : "This arrangement is not from the current admin"})
+
+        list_free_guides = []
+        guides = UserModel.query.filter_by(current_type='guide')
+        for guide in guides:
+            reserved = False
+            for guide_arangement in guide.guide_arangements:
+                if ((arangement.start_date > guide_arangement.start_date and arangement.start_date < guide_arangement.end_date) or 
+                        (arangement.end_date > guide_arangement.start_date and arangement.end_date < guide_arangement.end_date) or
+                        (arangement.start_date < guide_arangement.start_date and arangement.end_date > guide_arangement.end_date)
+                    ):
+                    reserved = True
+            if not reserved:
+                list_free_guides.append(guide)
+
+        return jsonify([marshal(g.to_json(), user_resource_fields) for g in list_free_guides]), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"message" : "Internal server error"}), 500
+            
+
+
+
+# route: http://127.0.0.1:5000/admin/arangement/<int:arangement_id>
 # PATCH: processing requests to update arangement by id
 # DELETE: processing requests to delete arangement by id
 # GET: processing request to retrieve the arangement by id
@@ -108,7 +146,8 @@ def process_arangement_by_id(arangement_id):
                 for guide_arangement in user_guide.guide_arangements:
                     # check if the guide is available at the required time
                     if ((arangement.start_date > guide_arangement.start_date and arangement.start_date < guide_arangement.end_date) or 
-                        (arangement.end_date > guide_arangement.start_date and arangement.end_date < guide_arangement.end_date)
+                        (arangement.end_date > guide_arangement.start_date and arangement.end_date < guide_arangement.end_date) or
+                        (arangement.start_date < guide_arangement.start_date and arangement.end_date > guide_arangement.end_date)
                     ):
                         return jsonify({"message": "Guide is reserved."}), 409
                 arangement.guide_id = args['guide_id']
