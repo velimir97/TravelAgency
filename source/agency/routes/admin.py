@@ -1,13 +1,14 @@
 from agency import app, db, mail
 from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
-from agency.parser.arrangement_parser import arrangement_args, arrangement_resource_fields, arrangement_update_args, check_arrangement_data
+from agency.parser.arrangement_parser import arrangement_args, arrangement_resource_fields, arrangement_update_args, check_arrangement_data, ArrangementSchema, ArrangementUpdateSchema
 from agency.parser.user_parser import user_type_args, user_resource_fields
 from agency.models import ArrangementModel, UserModel
 from datetime import datetime, timedelta
 from flask_mail import Message
 from flask import jsonify, request
 from math import ceil
+from marshmallow import ValidationError
 
 
 def is_admin(user):
@@ -22,23 +23,22 @@ def is_admin(user):
 def create_new_arrangement():
     is_admin(current_user)
 
-    # parsing the obtained arguments
-    args = arrangement_args.parse_args()
-
     try:
-        # check the args data is correct
-        check_result, check_message = check_arrangement_data(args)
-        if not check_result:
-            return jsonify({"message" : check_message}), 409
+        schema = ArrangementSchema()
+        try:
+            schema.load(request.form)
+        except ValidationError as e:
+            print(e)
+            return jsonify(e.messages), 409
 
         # creating and entering a new arrangement
-        arrangement = ArrangementModel(start_date = datetime.fromisoformat(args['start']),
-                                    end_date = datetime.fromisoformat(args['end']),
-                                    description = args['description'],
-                                    destination = args['destination'],
-                                    number_of_seats = args['number_of_seats'],
-                                    free_seats = args['number_of_seats'],
-                                    price = args['price'],
+        arrangement = ArrangementModel(start_date = datetime.fromisoformat(request.form['start_date']),
+                                    end_date = datetime.fromisoformat(request.form['end_date']),
+                                    description = request.form['description'],
+                                    destination = request.form['destination'],
+                                    number_of_seats = request.form['number_of_seats'],
+                                    free_seats = request.form['number_of_seats'],
+                                    price = request.form['price'],
                                     admin_id = current_user.id
         )
 
@@ -110,35 +110,40 @@ def process_arrangement_by_id(arrangement_id):
             time_now = datetime.now()
             if (arrangement.start_date - time_now < timedelta(days=5)):
                 return jsonify({"message" : "Five days until the arrangement"}), 404
-        except Exception as e:
-            print(e)
-            return jsonify({"message" : "Internal server error"}), 500
 
-        # parsing the obtained arguments
-        args = arrangement_update_args.parse_args()
+            schema = ArrangementUpdateSchema()
 
-        try:
-            # check if the args data is correct
-            check_result, check_message = check_arrangement_data(args)
-            if not check_result:
-                return jsonify({"message" : check_message}), 409
-            
+            # check if the form data is correct
+            try:
+                schema.load(request.form)
+            except ValidationError as e:
+                print(e)
+                return jsonify(e.messages), 409
+
+            start_date = request.form.get('start_date', None)
+            end_date = request.form.get('end_date', None)
+            description = request.form.get('description', None, type=str)
+            destination = request.form.get('destination', None, type=str)
+            number_of_seats = request.form.get('number_of_seats', None, type=int)
+            price = request.form.get('price', None, type=int)
+            guide_id = request.form.get('guide_id', None, type=int)
+
             # updating the values
-            if args['start'] != None:
-                arrangement.start_date = datetime.fromisoformat(args['start'])
-            if args['end'] != None:
-                arrangement.end_date = datetime.fromisoformat(args['end'])
-            if args['description'] != None:
-                arrangement.description = args['description']
-            if args['destination'] != None:
-                arrangement.destination = args['destination']
-            if args['number_of_seats'] != None:
-                arrangement.number_of_seats = args['number_of_seats']
-            if args['price'] != None:
-                arrangement.price = args['price']    
-            if args['guide_id'] != None:
+            if start_date != None:
+                arrangement.start_date = datetime.fromisoformat(start_date)
+            if end_date != None:
+                arrangement.end_date = datetime.fromisoformat(end_date)
+            if description != None:
+                arrangement.description = description
+            if destination != None:
+                arrangement.destination = destination
+            if number_of_seats != None:
+                arrangement.number_of_seats = number_of_seats
+            if price != None:
+                arrangement.price = price   
+            if guide_id != None:
                 # updating the guide values
-                user_guide = UserModel.query.filter_by(id=args['guide_id']).first()
+                user_guide = UserModel.query.filter_by(id=guide_id).first()
                 if not user_guide or user_guide.current_type != 'guide':
                     return jsonify({"message" : "Guide is not found"}), 404
                 for guide_arrangement in user_guide.guide_arrangements:
@@ -146,7 +151,7 @@ def process_arrangement_by_id(arrangement_id):
                     if arrangement.start_date > guide_arrangement.end_date or arrangement.end_date < guide_arrangement.start_date:
                         continue
                     return jsonify({"message": "Guide is reserved."}), 409
-                arrangement.guide_id = args['guide_id']
+                arrangement.guide_id = guide_id
             
             db.session.commit()
             return jsonify({"message" : "Arrangement is updated"}), 200
@@ -241,8 +246,8 @@ def process_user_requirement(user_id):
         
             return jsonify({"message" : "Success"}), 200
         elif new_type == user.current_type:
-            msg = request.form.get("message", "", type=str)
-            if msg == "":
+            msg = request.form.get("message", None, type=str)
+            if msg == None:
                 return jsonify({"message" : "Message is require"}), 409
 
             # user type not upgrade

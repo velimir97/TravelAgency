@@ -21,10 +21,10 @@ def update_description(arrangement_id):
     if request.method == "PUT":
         try:
             # parsing the obtained argument
-            guide_description = request.args.get("description", "none", type=str)
+            guide_description = request.form.get("description", None, type=str)
 
             # check the description is valid
-            if guide_description == "none" or len(guide_description) < 10:
+            if guide_description == None or len(guide_description) < 10:
                 return jsonify({"message" : "Description is wrong"}), 409
             
             # check if the arrangement is mine
