@@ -66,6 +66,10 @@ def process_arangement_by_id(arangement_id):
             if not arangement:
                 return jsonify({"message" : "Arangement does't not exist"}), 404
             
+            # check if this arrangement is from the current admin
+            if arangement.admin_id != current_user.id:
+                return jsonify({"message" : "This arrangement is not from the current admin"})
+
             # check if the arangement starts in five days
             time_now = datetime.now()
             if (arangement.start_date - time_now < timedelta(days=5)):
