@@ -64,7 +64,7 @@ def free_guides(arrangement_id):
             return jsonify({"message" : "Arrangement does't not exist"}), 404
 
         # check if this arrangement is from the current admin
-        if arrangement.admin_id != 7:
+        if arrangement.admin_id != current_user.id:
             return jsonify({"message" : "This arrangement is not from the current admin"})
 
         list_free_guides = []
@@ -72,11 +72,9 @@ def free_guides(arrangement_id):
         for guide in guides:
             reserved = False
             for guide_arrangement in guide.guide_arrangements:
-                if ((arrangement.start_date > guide_arrangement.start_date and arrangement.start_date < guide_arrangement.end_date) or 
-                        (arrangement.end_date > guide_arrangement.start_date and arrangement.end_date < guide_arrangement.end_date) or
-                        (arrangement.start_date < guide_arrangement.start_date and arrangement.end_date > guide_arrangement.end_date)
-                    ):
-                    reserved = True
+                if arrangement.start_date > guide_arrangement.end_date or arrangement.end_date < guide_arrangement.start_date:
+                    continue
+                reserved = True
             if not reserved:
                 list_free_guides.append(guide)
 
@@ -145,11 +143,9 @@ def process_arrangement_by_id(arrangement_id):
                     return jsonify({"message" : "Guide is not found"}), 404
                 for guide_arrangement in user_guide.guide_arrangements:
                     # check if the guide is available at the required time
-                    if ((arrangement.start_date > guide_arrangement.start_date and arrangement.start_date < guide_arrangement.end_date) or 
-                        (arrangement.end_date > guide_arrangement.start_date and arrangement.end_date < guide_arrangement.end_date) or
-                        (arrangement.start_date < guide_arrangement.start_date and arrangement.end_date > guide_arrangement.end_date)
-                    ):
-                        return jsonify({"message": "Guide is reserved."}), 409
+                    if arrangement.start_date > guide_arrangement.end_date or arrangement.end_date < guide_arrangement.start_date:
+                        continue
+                    return jsonify({"message": "Guide is reserved."}), 409
                 arrangement.guide_id = args['guide_id']
             
             db.session.commit()
@@ -200,13 +196,13 @@ def process_arrangement_by_id(arrangement_id):
 # route: http://127.0.0.1:5000/admin/users_reqs
 # GET: handles the retrieval request of users who want to upgrade the type
 @app.route('/admin/users_reqs')
-#@login_required
+@login_required
 def get_users_requirement():
-    #is_admin(current_user)
+    is_admin(current_user)
 
     try:
         # search users who want upgrade
-        user_reqs = db.session.query(UserModel).filter(UserModel.desired_type != UserModel.current_type).all()
+        user_reqs = UserModel.query.filter(UserModel.desired_type != UserModel.current_type).all()
         return jsonify([marshal(u.to_json(), user_resource_fields) for u in user_reqs])
     except Exception as e:
         print(e)
@@ -216,9 +212,9 @@ def get_users_requirement():
 # route: http://127.0.0.1:5000/admin/response_type
 # PATCH: accepting or rejecting user requests for upgrade type
 @app.route('/admin/response_type/<int:user_id>', methods = ["PATCH"])
-#@login_required
+@login_required
 def process_user_requirement(user_id):
-    #is_admin(current_user)
+    is_admin(current_user)
 
     try :
         new_type = request.form.get("new_type", "none", type=str)
@@ -269,12 +265,12 @@ def process_user_requirement(user_id):
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
 
-# route: http://127.0.0.1:5000/users, method GET
-# processing requests to get all users or get user by type
+# route: http://127.0.0.1:5000/users
+# GET: processing requests to get all users or get user by type
 @app.route('/admin/users')
-#@login_required
+@login_required
 def all_users_by_type():
-    #is_admin(current_user)
+    is_admin(current_user)
 
     # parsing the obtained arguments
     page = request.args.get('page', 1, type=int)

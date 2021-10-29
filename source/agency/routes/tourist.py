@@ -23,13 +23,11 @@ def next_possible_arrangements():
 
     if request.method == "GET":
         try:
-            tourist = UserModel.query.filter_by(id = current_user.id).first()
+            tourist = UserModel.query.filter_by(id = 1).first()
             my_arrangements = [a.id for a in tourist.tourist_arrangements]
 
-            all_arrangements = ArrangementModel.query.all()
-            return jsonify([marshal(a.to_json(), arrangement_resource_fields) for a in all_arrangements 
-                            if a.start_date > datetime.now() + timedelta(days=5) 
-                                and a.id not in my_arrangements]), 200
+            next_arrangements = ArrangementModel.query.filter(ArrangementModel.start_date > datetime.now() + timedelta(days=5), ArrangementModel.id.not_in(my_arrangements)).all()
+            return jsonify([marshal(a.to_json(), arrangement_resource_fields) for a in next_arrangements])
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -76,7 +74,7 @@ def search_arrangements():
     args = arrangement_search_args.parse_args()
     
     try:
-        arrangements = ArrangementModel.query.all()
+        arrangements = ArrangementModel.query
 
         # check args
         if args['start']:
@@ -84,16 +82,20 @@ def search_arrangements():
                 datetime.fromisoformat(args['start'])
             except ValueError:
                 return jsonify({"message" : "Start date is wrong"}), 409
-            arrangements = [a for a in arrangements if a.start_date > datetime.fromisoformat(args['start'])]
+            arrangements = arrangements.filter(ArrangementModel.start_date > datetime.fromisoformat(args['start']))
+            #arrangements = [a for a in arrangements if a.start_date > datetime.fromisoformat(args['start'])]
         if args['end']:
             try:
                 datetime.fromisoformat(args['end'])
             except ValueError:
                 return jsonify({"message" : "End date is wrong"}), 409
-            arrangements = [a for a in arrangements if a.end_date < datetime.fromisoformat(args['end'])]
+            arrangements = arrangements.filter(ArrangementModel.end_date < datetime.fromisoformat(args['end']))
+            #arrangements = [a for a in arrangements if a.end_date < datetime.fromisoformat(args['end'])]
         if args['destination']:
-            arrangements = [a for a in arrangements if a.destination == args['destination']]
+            arrangements = arrangements.filter(ArrangementModel.destination == args['destination'])
+            #arrangements = [a for a in arrangements if a.destination == args['destination']]
 
+        arrangements = arrangements.all()
         return jsonify([marshal(a.to_json(), arrangement_resource_fields) for a in arrangements]), 200
     except Exception as e:
         print(e)
