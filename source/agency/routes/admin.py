@@ -285,9 +285,16 @@ def all_users_by_type():
             if page > ceil(users.count()/per_page):
                 return jsonify({"message": "Page is not found"}), 404
 
+            res = {"count" : users.count()}
+
             users = users.order_by(sort).paginate(page=page, per_page=per_page)
             user_list = [marshal(u.to_json(), user_resource_fields) for u in users.items]
-            return jsonify(user_list), 200
+            res['users'] = user_list
+            
+            res['page'] = page
+            res['per_page'] = per_page
+            
+            return jsonify(res), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500

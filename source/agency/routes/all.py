@@ -81,9 +81,16 @@ def all_arrangements():
         if page > ceil(arrangements.count()/per_page):
             return jsonify({"message": "Page is not found"}), 404
 
+        res = {"count" : arrangements.count()}
+        
         arrangements = arrangements.order_by(sort).paginate(page=page, per_page=per_page)
         arrangement_list = [marshal(a.to_json(), arrangement_resource_fields) for a in arrangements.items]
-        return jsonify(arrangement_list), 200
+        res['arrangements'] = arrangement_list
+        
+        res['page'] = page
+        res['per_page'] = per_page
+        
+        return jsonify(res), 200
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
