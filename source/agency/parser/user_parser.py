@@ -65,7 +65,7 @@ user_type_args = reqparse.RequestParser()
 user_type_args.add_argument("type", type=str, help="Type is required", required=True)
 
 user_reserve_args = reqparse.RequestParser()
-user_reserve_args.add_argument("arangement_id", type=int, help="Id is required", required=True)
+user_reserve_args.add_argument("arrangement_id", type=int, help="Id is required", required=True)
 user_reserve_args.add_argument("number_of_persons", type=int, help="Number of persons is required", required=True)
 
 # restriction on user return

@@ -2,11 +2,11 @@ from agency import db, login_manager
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# table for connecting tourists and arangements 
+# table for connecting tourists and arrangements 
 # many to many
-tourist_arangement_table = db.Table('tourist_arangement_table',
+tourist_arrangement_table = db.Table('tourist_arrangement_table',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('ang_id', db.Integer, db.ForeignKey('arangement.id'), primary_key=True)
+    db.Column('ang_id', db.Integer, db.ForeignKey('arrangement.id'), primary_key=True)
 )
 
 class UserModel(UserMixin, db.Model):
@@ -19,8 +19,8 @@ class UserModel(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     desired_type = db.Column(db.String(15), nullable=False)
     current_type = db.Column(db.String(15), nullable=False)
-    guide_arangements = db.relationship('ArangementModel', backref='guide', lazy=True)
-    tourist_arangements = db.relationship("ArangementModel", secondary=tourist_arangement_table, lazy=True, backref=db.backref('tourists', lazy = 'dynamic'))
+    guide_arrangements = db.relationship('ArrangementModel', backref='guide', lazy=True)
+    tourist_arrangements = db.relationship("ArrangementModel", secondary=tourist_arrangement_table, lazy=True, backref=db.backref('tourists', lazy = 'dynamic'))
 
     # password hashing 
     def set_password(self, password):
@@ -42,16 +42,16 @@ class UserModel(UserMixin, db.Model):
             "password": self.password,
             "desired_type": self.desired_type,
             "current_type": self.current_type,
-            "guide_arangements": self.guide_arangements,
-            "tourist_arangements": self.tourist_arangements
+            "guide_arrangements": self.guide_arrangements,
+            "tourist_arrangements": self.tourist_arrangements
         }
 
 @login_manager.user_loader
 def load_user(user_id):
     return UserModel.query.get(int(user_id))
 
-class ArangementModel(db.Model):
-    __tablename__ = "arangement"
+class ArrangementModel(db.Model):
+    __tablename__ = "arrangement"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
@@ -64,7 +64,7 @@ class ArangementModel(db.Model):
     free_seats = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
-        return f"Arangement(start = {start_date}, end = {end_date}, description = {description})"
+        return f"Arrangement(start = {start_date}, end = {end_date}, description = {description})"
 
     def to_json(self):
         return {

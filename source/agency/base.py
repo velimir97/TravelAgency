@@ -1,5 +1,5 @@
 from agency import db
-from .models import UserModel, ArangementModel
+from .models import UserModel, ArrangementModel
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -68,7 +68,7 @@ db.session.add(teodora)
 db.session.commit()
 
 #1
-engleska = ArangementModel(start_date = datetime.now() + timedelta(days=100),
+engleska = ArrangementModel(start_date = datetime.now() + timedelta(days=100),
                            end_date = datetime.now() + timedelta(days=110),
                            description = "English pub",
                            destination = "English, London",
@@ -81,7 +81,7 @@ engleska.guide = ana
 db.session.add(engleska)
 db.session.commit()
 #2
-francuska = ArangementModel(start_date = datetime.now() + timedelta(days= 40),
+francuska = ArrangementModel(start_date = datetime.now() + timedelta(days= 40),
                            end_date = datetime.now() + timedelta(days=45),
                            description = "Jelisejska polja",
                            destination = "Francuska, Pariz",
@@ -93,7 +93,7 @@ francuska = ArangementModel(start_date = datetime.now() + timedelta(days= 40),
 db.session.add(francuska)
 db.session.commit()
 #3
-spanija = ArangementModel(start_date = datetime.now() + timedelta(days=4),
+spanija = ArrangementModel(start_date = datetime.now() + timedelta(days=4),
                            end_date = datetime.now() + timedelta(days=8),
                            description = "Park of Antonio Gaudi",
                            destination = "Spain, Barselona",
@@ -106,7 +106,7 @@ spanija.guide = ana
 db.session.add(spanija)
 db.session.commit()
 #4
-ceska = ArangementModel(start_date = datetime.now() + timedelta(days=3),
+ceska = ArrangementModel(start_date = datetime.now() + timedelta(days=3),
                            end_date = datetime.now() + timedelta(days=13),
                            description = "Visit to Adam Ondra",
                            destination = "Ceska, Brno",
@@ -118,7 +118,7 @@ ceska = ArangementModel(start_date = datetime.now() + timedelta(days=3),
 db.session.add(ceska)
 db.session.commit()
 #5
-nemacka = ArangementModel(start_date = datetime.now() + timedelta(days=55),
+nemacka = ArrangementModel(start_date = datetime.now() + timedelta(days=55),
                            end_date = datetime.now() + timedelta(days=65),
                            description = "Bridges of Hamburh",
                            destination = "Nemacka, Hamburg",
@@ -131,7 +131,7 @@ nemacka.guide = ana
 db.session.add(nemacka)
 db.session.commit()
 #6
-rusija = ArangementModel(start_date = datetime.now() + timedelta(days=20),
+rusija = ArrangementModel(start_date = datetime.now() + timedelta(days=20),
                            end_date = datetime.now() + timedelta(days=32),
                            description = "Crveni trg",
                            destination = "Rusija, Moskva",
@@ -146,7 +146,7 @@ rusija.tourists.append(djole)
 rusija.tourists.append(bole)
 db.session.commit()
 #7
-cg = ArangementModel(start_date = datetime.now() + timedelta(days=250),
+cg = ArrangementModel(start_date = datetime.now() + timedelta(days=250),
                            end_date = datetime.now() + timedelta(days=260),
                            description = "More",
                            destination = "Crna Gora, Sveti Stefan",
@@ -158,7 +158,7 @@ cg = ArangementModel(start_date = datetime.now() + timedelta(days=250),
 db.session.add(cg)
 db.session.commit()
 #8
-srbija1 = ArangementModel(start_date = datetime.now() + timedelta(days=90),
+srbija1 = ArrangementModel(start_date = datetime.now() + timedelta(days=90),
                            end_date = datetime.now() + timedelta(days=120),
                            description = "Skiing",
                            destination = "Serbia, Kopaonik",
@@ -173,7 +173,7 @@ srbija1.tourists.append(bole)
 srbija1.tourists.append(maja)
 db.session.commit()
 #9
-srbija2 = ArangementModel(start_date = datetime.now() + timedelta(days=10),
+srbija2 = ArrangementModel(start_date = datetime.now() + timedelta(days=10),
                            end_date = datetime.now() + timedelta(days=11),
                            description = "Planinarenje",
                            destination = "Serbia, Stara planina",
@@ -189,7 +189,7 @@ srbija2.tourists.append(ceca)
 db.session.commit()
 
 #10
-srbija3 = ArangementModel(start_date = datetime.now() - timedelta(days=10),
+srbija3 = ArrangementModel(start_date = datetime.now() - timedelta(days=10),
                            end_date = datetime.now() - timedelta(days=5),
                            description = "Planinarenje",
                            destination = "Serbia, Zeljin",

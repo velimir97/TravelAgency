@@ -1,9 +1,9 @@
 from agency import app, db, mail
 from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
-from agency.parser.arangement_parser import arangement_args, arangement_resource_fields, arangement_update_args, check_arangement_data
+from agency.parser.arrangement_parser import arrangement_args, arrangement_resource_fields, arrangement_update_args, check_arrangement_data
 from agency.parser.user_parser import user_type_args, user_resource_fields
-from agency.models import ArangementModel, UserModel
+from agency.models import ArrangementModel, UserModel
 from datetime import datetime, timedelta
 from flask_mail import Message
 from flask import jsonify, request
@@ -15,24 +15,24 @@ def is_admin(user):
         abort(401, message="This request is not allowed to you")
 
 
-# route: http://127.0.0.1:5000/admin/add_arangement
-# POST: processing requests to add arangements
-@app.route("/admin/add_arangement", methods = ['POST'])
+# route: http://127.0.0.1:5000/admin/add_arrangement
+# POST: processing requests to add arrangements
+@app.route("/admin/add_arrangement", methods = ['POST'])
 @login_required
-def create_new_arangement():
+def create_new_arrangement():
     is_admin(current_user)
 
     # parsing the obtained arguments
-    args = arangement_args.parse_args()
+    args = arrangement_args.parse_args()
 
     try:
         # check the args data is correct
-        check_result, check_message = check_arangement_data(args)
+        check_result, check_message = check_arrangement_data(args)
         if not check_result:
             return jsonify({"message" : check_message}), 409
 
-        # creating and entering a new arangement
-        arangement = ArangementModel(start_date = datetime.fromisoformat(args['start']),
+        # creating and entering a new arrangement
+        arrangement = ArrangementModel(start_date = datetime.fromisoformat(args['start']),
                                     end_date = datetime.fromisoformat(args['end']),
                                     description = args['description'],
                                     destination = args['destination'],
@@ -42,39 +42,39 @@ def create_new_arangement():
                                     admin_id = current_user.id
         )
 
-        db.session.add(arangement)
+        db.session.add(arrangement)
         db.session.commit()
-        return jsonify({"message" : "Successful create arangement"}), 201
+        return jsonify({"message" : "Successful create arrangement"}), 201
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/admin/free_guides/<int:arangement_id>
+# route: http://127.0.0.1:5000/admin/free_guides/<int:arrangement_id>
 # GET: processing request to retrieving free guides at the time of the arrangement
-@app.route("/admin/free_guides/<int:arangement_id>")
+@app.route("/admin/free_guides/<int:arrangement_id>")
 @login_required
-def free_guides(arangement_id):
+def free_guides(arrangement_id):
     is_admin(current_user)
 
     try:
-        # check if the arangement exists
-        arangement = ArangementModel.query.filter_by(id=arangement_id).first()
-        if not arangement:
-            return jsonify({"message" : "Arangement does't not exist"}), 404
+        # check if the arrangement exists
+        arrangement = ArrangementModel.query.filter_by(id=arrangement_id).first()
+        if not arrangement:
+            return jsonify({"message" : "Arrangement does't not exist"}), 404
 
         # check if this arrangement is from the current admin
-        if arangement.admin_id != 7:
+        if arrangement.admin_id != 7:
             return jsonify({"message" : "This arrangement is not from the current admin"})
 
         list_free_guides = []
         guides = UserModel.query.filter_by(current_type='guide')
         for guide in guides:
             reserved = False
-            for guide_arangement in guide.guide_arangements:
-                if ((arangement.start_date > guide_arangement.start_date and arangement.start_date < guide_arangement.end_date) or 
-                        (arangement.end_date > guide_arangement.start_date and arangement.end_date < guide_arangement.end_date) or
-                        (arangement.start_date < guide_arangement.start_date and arangement.end_date > guide_arangement.end_date)
+            for guide_arrangement in guide.guide_arrangements:
+                if ((arrangement.start_date > guide_arrangement.start_date and arrangement.start_date < guide_arrangement.end_date) or 
+                        (arrangement.end_date > guide_arrangement.start_date and arrangement.end_date < guide_arrangement.end_date) or
+                        (arrangement.start_date < guide_arrangement.start_date and arrangement.end_date > guide_arrangement.end_date)
                     ):
                     reserved = True
             if not reserved:
@@ -88,109 +88,109 @@ def free_guides(arangement_id):
 
 
 
-# route: http://127.0.0.1:5000/admin/arangement/<int:arangement_id>
-# PATCH: processing requests to update arangement by id
-# DELETE: processing requests to delete arangement by id
-# GET: processing request to retrieve the arangement by id
-@app.route("/admin/arangement/<int:arangement_id>", methods = ['PATCH', 'DELETE', 'GET'])
+# route: http://127.0.0.1:5000/admin/arrangement/<int:arrangement_id>
+# PATCH: processing requests to update arrangement by id
+# DELETE: processing requests to delete arrangement by id
+# GET: processing request to retrieve the arrangement by id
+@app.route("/admin/arrangement/<int:arrangement_id>", methods = ['PATCH', 'DELETE', 'GET'])
 @login_required
-def process_arangement_by_id(arangement_id):
+def process_arrangement_by_id(arrangement_id):
     is_admin(current_user)
 
     if request.method == "PATCH":
         try:
-            # check if the arangement exists
-            arangement = ArangementModel.query.filter_by(id=arangement_id).first()
-            if not arangement:
-                return jsonify({"message" : "Arangement does't not exist"}), 404
+            # check if the arrangement exists
+            arrangement = ArrangementModel.query.filter_by(id=arrangement_id).first()
+            if not arrangement:
+                return jsonify({"message" : "Arrangement does't not exist"}), 404
             
             # check if this arrangement is from the current admin
-            if arangement.admin_id != current_user.id:
+            if arrangement.admin_id != current_user.id:
                 return jsonify({"message" : "This arrangement is not from the current admin"})
 
-            # check if the arangement starts in five days
+            # check if the arrangement starts in five days
             time_now = datetime.now()
-            if (arangement.start_date - time_now < timedelta(days=5)):
-                return jsonify({"message" : "Five days until the arangement"}), 404
+            if (arrangement.start_date - time_now < timedelta(days=5)):
+                return jsonify({"message" : "Five days until the arrangement"}), 404
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
 
         # parsing the obtained arguments
-        args = arangement_update_args.parse_args()
+        args = arrangement_update_args.parse_args()
 
         try:
             # check if the args data is correct
-            check_result, check_message = check_arangement_data(args)
+            check_result, check_message = check_arrangement_data(args)
             if not check_result:
                 return jsonify({"message" : check_message}), 409
             
             # updating the values
             if args['start'] != None:
-                arangement.start_date = datetime.fromisoformat(args['start'])
+                arrangement.start_date = datetime.fromisoformat(args['start'])
             if args['end'] != None:
-                arangement.end_date = datetime.fromisoformat(args['end'])
+                arrangement.end_date = datetime.fromisoformat(args['end'])
             if args['description'] != None:
-                arangement.description = args['description']
+                arrangement.description = args['description']
             if args['destination'] != None:
-                arangement.destination = args['destination']
+                arrangement.destination = args['destination']
             if args['number_of_seats'] != None:
-                arangement.number_of_seats = args['number_of_seats']
+                arrangement.number_of_seats = args['number_of_seats']
             if args['price'] != None:
-                arangement.price = args['price']    
+                arrangement.price = args['price']    
             if args['guide_id'] != None:
                 # updating the guide values
                 user_guide = UserModel.query.filter_by(id=args['guide_id']).first()
                 if not user_guide or user_guide.current_type != 'guide':
                     return jsonify({"message" : "Guide is not found"}), 404
-                for guide_arangement in user_guide.guide_arangements:
+                for guide_arrangement in user_guide.guide_arrangements:
                     # check if the guide is available at the required time
-                    if ((arangement.start_date > guide_arangement.start_date and arangement.start_date < guide_arangement.end_date) or 
-                        (arangement.end_date > guide_arangement.start_date and arangement.end_date < guide_arangement.end_date) or
-                        (arangement.start_date < guide_arangement.start_date and arangement.end_date > guide_arangement.end_date)
+                    if ((arrangement.start_date > guide_arrangement.start_date and arrangement.start_date < guide_arrangement.end_date) or 
+                        (arrangement.end_date > guide_arrangement.start_date and arrangement.end_date < guide_arrangement.end_date) or
+                        (arrangement.start_date < guide_arrangement.start_date and arrangement.end_date > guide_arrangement.end_date)
                     ):
                         return jsonify({"message": "Guide is reserved."}), 409
-                arangement.guide_id = args['guide_id']
+                arrangement.guide_id = args['guide_id']
             
             db.session.commit()
-            return jsonify({"message" : "Arangement is updated"}), 200
+            return jsonify({"message" : "Arrangement is updated"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
     
     if request.method == "DELETE":
         try:
-            arangement = ArangementModel.query.filter_by(id=arangement_id).first()
-            if not arangement:
-                return jsonify({"message" : "Arangement does't exist"}), 404
+            arrangement = ArrangementModel.query.filter_by(id=arrangement_id).first()
+            if not arrangement:
+                return jsonify({"message" : "Arrangement does't exist"}), 404
 
-            # check if the arangement starts in five days
+            # check if the arrangement starts in five days
             time_now = datetime.now()
-            if (arangement.start_date - time_now < timedelta(days=5)):
-                return jsonify({"message" : "Five days until the arangement"}), 404
+            if (arrangement.start_date - time_now < timedelta(days=5)):
+                return jsonify({"message" : "Five days until the arrangement"}), 404
                 
             # an email is sent to users
-            for tourist in arangement.tourists:
+            for tourist in arrangement.tourists:
                 try:
-                    msg = Message("The arangement was canceled.", sender=app.config.get("MAIL_USERNAME") , recipients=[tourist.email])
+                    msg = Message("The arrangement was canceled.", sender=app.config.get("MAIL_USERNAME") , recipients=[tourist.email])
                     mail.send(msg)
                 except Exception as e:
                     print(e)
                     return jsonify({"message" : "Mails not sent"}), 500
 
-            db.session.delete(arangement)
+            db.session.delete(arrangement)
             db.session.commit()
-            return jsonify({"message" : "Arangement has been deleted"}), 200
+            return jsonify({"message" : "Arrangement has been deleted"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
 
     if request.method == "GET":
         try:
-            arangement = ArangementModel.query.filter_by(id=arangement_id).first()
-            if not arangement:
-                return jsonify({"message" : "Arangement not found"}), 404
-            return jsonify(arangement.to_json()), 200
+            arrangement = ArrangementModel.query.filter_by(id=arrangement_id).first()
+            if not arrangement:
+                return jsonify({"message" : "Arrangement not found"}), 404
+            return jsonify(arrangement.to_json()), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -305,14 +305,14 @@ def all_users_by_type():
         # getting tourist users
         try:
             tourists = UserModel.query.filter_by(current_type="tourist")
-            tourists_with_arangements = []
+            tourists_with_arrangements = []
             for tourist in tourists:
-                tourist_arangements = [a.to_json() for a in tourist.tourist_arangements]
+                tourist_arrangements = [a.to_json() for a in tourist.tourist_arrangements]
                 tourist_json = marshal(tourist.to_json(), user_resource_fields)
-                tourist_json['tourist_arangements'] = tourist_arangements
-                tourists_with_arangements.append(tourist_json)
+                tourist_json['tourist_arrangements'] = tourist_arrangements
+                tourists_with_arrangements.append(tourist_json)
             
-            return jsonify(tourists_with_arangements), 200
+            return jsonify(tourists_with_arrangements), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -320,14 +320,14 @@ def all_users_by_type():
         # getting guide users
         try:
             guides = UserModel.query.filter_by(current_type="guide")
-            guides_with_arangements = []
+            guides_with_arrangements = []
             for guide in guides:
-                guide_arangements = [a.to_json() for a in guide.guide_arangements if a.end_date < datetime.now()]
+                guide_arrangements = [a.to_json() for a in guide.guide_arrangements if a.end_date < datetime.now()]
                 guide_json = marshal(guide.to_json(), user_resource_fields)
-                guide_json['guide_arangements'] = guide_arangements
-                guides_with_arangements.append(guide_json)
+                guide_json['guide_arrangements'] = guide_arrangements
+                guides_with_arrangements.append(guide_json)
             
-            return jsonify(guides_with_arangements), 200
+            return jsonify(guides_with_arrangements), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -335,16 +335,16 @@ def all_users_by_type():
     return jsonify({"message" : "Type not found"}), 404
 
 
-# route: http://127.0.0.1:5000/my_arangements
-# GET: processes the request for retrieval of its arangements
-@app.route("/admin/my_arangements")
+# route: http://127.0.0.1:5000/my_arrangements
+# GET: processes the request for retrieval of its arrangements
+@app.route("/admin/my_arrangements")
 @login_required
-def admins_arangements():
+def admins_arrangements():
     is_admin(current_user)
     try:
-        admin_arangements = ArangementModel.query.filter_by(admin_id = current_user.id)
-        admin_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in admin_arangements]
-        return jsonify(admin_arangements_list), 200
+        admin_arrangements = ArrangementModel.query.filter_by(admin_id = current_user.id)
+        admin_arrangements_list = [marshal(a.to_json(), arrangement_resource_fields) for a in admin_arrangements]
+        return jsonify(admin_arrangements_list), 200
     except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500

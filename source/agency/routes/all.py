@@ -1,8 +1,8 @@
 from agency import app, db
 from flask_restful import abort, marshal_with, marshal
 from agency.parser.user_parser import user_resource_fields, user_registration_args, user_login_args, check_user_data
-from agency.parser.arangement_parser import arangement_resource_fields
-from agency.models import UserModel, ArangementModel
+from agency.parser.arrangement_parser import arrangement_resource_fields
+from agency.models import UserModel, ArrangementModel
 from flask_login import login_user, logout_user, login_required
 from flask import jsonify, request
 from math import ceil
@@ -67,23 +67,23 @@ def logout():
         return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/arangements
-# GET :processing requests to get all arangements
-@app.route("/arangements")
-def all_arangements():
+# route: http://127.0.0.1:5000/arrangements
+# GET :processing requests to get all arrangements
+@app.route("/arrangements")
+def all_arrangements():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 5, type=int)
         sort = request.args.get('sort', 'id', type=str)
 
         # check that the page is correct
-        arangements = ArangementModel.query.filter_by()
-        if page > ceil(arangements.count()/per_page):
+        arrangements = ArrangementModel.query.filter_by()
+        if page > ceil(arrangements.count()/per_page):
             return jsonify({"message": "Page is not found"}), 404
 
-        arangements = arangements.order_by(sort).paginate(page=page, per_page=per_page)
-        arangement_list = [marshal(a.to_json(), arangement_resource_fields) for a in arangements.items]
-        return jsonify(arangement_list), 200
+        arrangements = arrangements.order_by(sort).paginate(page=page, per_page=per_page)
+        arrangement_list = [marshal(a.to_json(), arrangement_resource_fields) for a in arrangements.items]
+        return jsonify(arrangement_list), 200
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500

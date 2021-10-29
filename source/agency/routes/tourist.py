@@ -3,8 +3,8 @@ from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
 from flask import request, jsonify
 from agency.parser.user_parser import user_resource_fields, user_reserve_args, user_update_args, check_user_data
-from agency.parser.arangement_parser import arangement_resource_fields, arangement_search_args, check_arangement_data
-from agency.models import UserModel, ArangementModel
+from agency.parser.arrangement_parser import arrangement_resource_fields, arrangement_search_args, check_arrangement_data
+from agency.models import UserModel, ArrangementModel
 from datetime import datetime, timedelta
 
 
@@ -13,23 +13,23 @@ def is_tourist(user):
         abort(401, message="This request is not allowed to you")
 
 
-# route: http://127.0.0.1:5000/tourist/reserve_arangement
-# GET: takes all arangements that the user can reserve (tourist)
-# POST: reserve arangement (tourist)
-@app.route("/tourist/reserve_arangement", methods = ["GET", "POST"])
+# route: http://127.0.0.1:5000/tourist/reserve_arrangement
+# GET: takes all arrangements that the user can reserve (tourist)
+# POST: reserve arrangement (tourist)
+@app.route("/tourist/reserve_arrangement", methods = ["GET", "POST"])
 @login_required
-def next_possible_arangements():
+def next_possible_arrangements():
     is_tourist(current_user)
 
     if request.method == "GET":
         try:
             tourist = UserModel.query.filter_by(id = current_user.id).first()
-            my_arangements = [a.id for a in tourist.tourist_arangements]
+            my_arrangements = [a.id for a in tourist.tourist_arrangements]
 
-            all_arangements = ArangementModel.query.all()
-            return jsonify([marshal(a.to_json(), arangement_resource_fields) for a in all_arangements 
+            all_arrangements = ArrangementModel.query.all()
+            return jsonify([marshal(a.to_json(), arrangement_resource_fields) for a in all_arrangements 
                             if a.start_date > datetime.now() + timedelta(days=5) 
-                                and a.id not in my_arangements]), 200
+                                and a.id not in my_arrangements]), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -39,44 +39,44 @@ def next_possible_arangements():
         try:
             user = UserModel.query.filter_by(id=current_user.id).first()
 
-            arangement = ArangementModel.query.filter_by(id=args['arangement_id']).first()
+            arrangement = ArrangementModel.query.filter_by(id=args['arrangement_id']).first()
             # check to see if it's too late
-            if arangement.start_date < datetime.now() + timedelta(days=5):
-                return jsonify({"message" : "You are late for this arangement"}), 400
+            if arrangement.start_date < datetime.now() + timedelta(days=5):
+                return jsonify({"message" : "You are late for this arrangement"}), 400
             # check for seats
-            if args['number_of_persons'] > arangement.free_seats:
-                return jsonify({"message" : "The arangement is full"}), 400
+            if args['number_of_persons'] > arrangement.free_seats:
+                return jsonify({"message" : "The arrangement is full"}), 400
             
             # update free_seats
-            arangement.free_seats -= args['number_of_persons']
-            arangement.tourists.append(user)
+            arrangement.free_seats -= args['number_of_persons']
+            arrangement.tourists.append(user)
 
             db.session.commit()
 
             # price calculation
-            price = args['number_of_persons'] * arangement.price
+            price = args['number_of_persons'] * arrangement.price
             if args['number_of_persons'] > 3:
-                price -= (args['number_of_persons'] - 3) * 0.1 * arangement.price
+                price -= (args['number_of_persons'] - 3) * 0.1 * arrangement.price
 
-            msg = "Success! Price of arangement is " + str(price)
+            msg = "Success! Price of arrangement is " + str(price)
             return jsonify({"message" : msg}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/tourist/search_arangements
-# GET: takes arangements by date and destination
-@app.route("/tourist/search_arangements")
+# route: http://127.0.0.1:5000/tourist/search_arrangements
+# GET: takes arrangements by date and destination
+@app.route("/tourist/search_arrangements")
 @login_required
-def search_arangements():
+def search_arrangements():
     is_tourist(current_user)
 
     # parsing the obtained argument
-    args = arangement_search_args.parse_args()
+    args = arrangement_search_args.parse_args()
     
     try:
-        arangements = ArangementModel.query.all()
+        arrangements = ArrangementModel.query.all()
 
         # check args
         if args['start']:
@@ -84,17 +84,17 @@ def search_arangements():
                 datetime.fromisoformat(args['start'])
             except ValueError:
                 return jsonify({"message" : "Start date is wrong"}), 409
-            arangements = [a for a in arangements if a.start_date > datetime.fromisoformat(args['start'])]
+            arrangements = [a for a in arrangements if a.start_date > datetime.fromisoformat(args['start'])]
         if args['end']:
             try:
                 datetime.fromisoformat(args['end'])
             except ValueError:
                 return jsonify({"message" : "End date is wrong"}), 409
-            arangements = [a for a in arangements if a.end_date < datetime.fromisoformat(args['end'])]
+            arrangements = [a for a in arrangements if a.end_date < datetime.fromisoformat(args['end'])]
         if args['destination']:
-            arangements = [a for a in arangements if a.destination == args['destination']]
+            arrangements = [a for a in arrangements if a.destination == args['destination']]
 
-        return jsonify([marshal(a.to_json(), arangement_resource_fields) for a in arangements]), 200
+        return jsonify([marshal(a.to_json(), arrangement_resource_fields) for a in arrangements]), 200
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
@@ -158,17 +158,17 @@ def update_my_profile():
             return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/tourist/my_arangements
-# GET: processes the request for retrieval of its arangements
-@app.route("/tourist/my_arangements")
+# route: http://127.0.0.1:5000/tourist/my_arrangements
+# GET: processes the request for retrieval of its arrangements
+@app.route("/tourist/my_arrangements")
 @login_required
-def tourists_arangements():
+def tourists_arrangements():
     is_tourist()
     try:
         user = UserModel.query.filter_by(id=current_user.id).first()
-        tourist_arangements = user.tourist_arangements
-        tourist_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in tourist_arangements]
-        return jsonify(tourist_arangements_list), 200
+        tourist_arrangements = user.tourist_arrangements
+        tourist_arrangements_list = [marshal(a.to_json(), arrangement_resource_fields) for a in tourist_arrangements]
+        return jsonify(tourist_arrangements_list), 200
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500

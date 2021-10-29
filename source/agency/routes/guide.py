@@ -2,8 +2,8 @@ from agency import app, db
 from flask_login import login_required, current_user
 from flask_restful import abort, marshal_with, marshal
 from flask import request, jsonify
-from agency.models import UserModel, ArangementModel
-from agency.parser.arangement_parser import arangement_resource_fields
+from agency.models import UserModel, ArrangementModel
+from agency.parser.arrangement_parser import arrangement_resource_fields
 from datetime import datetime, timedelta
 
 
@@ -11,11 +11,11 @@ def is_guide(user):
     if user.current_type != "guide":
         abort(401, message="This request is not allowed to you")
 
-# route: http://127.0.0.1:5000/update_description/<int:arangement_id>
-# PUT: updates the description of the arangement
-@app.route("/guide/update_description/<int:arangement_id>", methods=["PUT"])
+# route: http://127.0.0.1:5000/update_description/<int:arrangement_id>
+# PUT: updates the description of the arrangement
+@app.route("/guide/update_description/<int:arrangement_id>", methods=["PUT"])
 @login_required
-def update_description(arangement_id):
+def update_description(arrangement_id):
     is_guide(current_user)
 
     if request.method == "PUT":
@@ -27,17 +27,17 @@ def update_description(arangement_id):
             if guide_description == "none" or len(guide_description) < 10:
                 return jsonify({"message" : "Description is wrong"}), 409
             
-            # check if the arangement is mine
-            my_arangements = [a.id for a in current_user.guide_arangements]
-            if arangement_id not in my_arangements:
-                return jsonify({"message" : "You are not the guide of this arangement"}), 409
+            # check if the arrangement is mine
+            my_arrangements = [a.id for a in current_user.guide_arrangements]
+            if arrangement_id not in my_arrangements:
+                return jsonify({"message" : "You are not the guide of this arrangement"}), 409
 
-            arangement = ArangementModel.query.filter_by(id=arangement_id).first()
-            if arangement.start_date < datetime.now() + timedelta(days=5):
+            arrangement = ArrangementModel.query.filter_by(id=arrangement_id).first()
+            if arrangement.start_date < datetime.now() + timedelta(days=5):
                 return jsonify({"message" : "Start date is wrong"}), 409
 
             # memorizing a new description
-            arangement.description = guide_description
+            arrangement.description = guide_description
             db.session.commit()
             return jsonify({"message": "Description is updated!"}), 200
         except Exception as e:
@@ -63,18 +63,18 @@ def requirement_upgrade():
             return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/guide/my_arangements
-# GET: processes the request for retrieval of its arangements
-@app.route("/guide/my_arangements")
+# route: http://127.0.0.1:5000/guide/my_arrangements
+# GET: processes the request for retrieval of its arrangements
+@app.route("/guide/my_arrangements")
 @login_required
-def guides_arangements():
+def guides_arrangements():
     is_guide(current_user)
 
     try:
         user = UserModel.query.filter_by(id=current_user.id).first()
-        guide_arangements = user.guide_arangements
-        guide_arangements_list = [marshal(a.to_json(), arangement_resource_fields) for a in guide_arangements]
-        return jsonify(guide_arangements_list), 200
+        guide_arrangements = user.guide_arrangements
+        guide_arrangements_list = [marshal(a.to_json(), arrangement_resource_fields) for a in guide_arrangements]
+        return jsonify(guide_arrangements_list), 200
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
