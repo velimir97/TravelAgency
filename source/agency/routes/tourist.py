@@ -103,8 +103,8 @@ def search_arangements():
 # route: http://127.0.0.1:5000/tourist/my_profile
 # GET: retrieves tourist profile information
 # PUT: update tourist profile
-# POST: sends a request for promotion
-@app.route("/tourist/my_profile", methods = ["GET", "PUT","POST"])
+# PATCH: sends a request for promotion
+@app.route("/tourist/my_profile", methods = ["GET", "PUT","PATCH"])
 @login_required
 def update_my_profile():
     is_tourist(current_user)
@@ -143,8 +143,8 @@ def update_my_profile():
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
 
-    if request.method == "POST":
-        upgrade_type = request.args.get("type", "none", type=str)
+    if request.method == "PATCH":
+        upgrade_type = request.form.get("type", "none", type=str)
         try:
             if upgrade_type not in ['guide', 'admin']:
                 return jsonify({"message" : "Type is wrong"}), 409
