@@ -200,20 +200,14 @@ def process_arrangement_by_id(arrangement_id):
 # route: http://127.0.0.1:5000/admin/users_reqs
 # GET: handles the retrieval request of users who want to upgrade the type
 @app.route('/admin/users_reqs')
-@login_required
+#@login_required
 def get_users_requirement():
-    is_admin(current_user)
+    #is_admin(current_user)
 
     try:
         # search users who want upgrade
-        tourist_req_admin = UserModel.query.filter_by(desired_type = 'admin', current_type = 'tourist')
-        guide_req_admin = UserModel.query.filter_by(desired_type = 'admin', current_type = 'guide')
-        tourist_req_guide = UserModel.query.filter_by(desired_type = 'guide', current_type = 'tourist')
-
-        list_tourist_req_admin = [marshal(u.to_json(), user_resource_fields) for u in tourist_req_admin]
-        list_guide_req_admin = [marshal(u.to_json(), user_resource_fields) for u in guide_req_admin]
-        list_tourist_req_guide = [marshal(u.to_json(), user_resource_fields) for u in tourist_req_guide]
-        return jsonify(list_tourist_req_admin + list_guide_req_admin + list_tourist_req_guide), 200
+        user_reqs = db.session.query(UserModel).filter(UserModel.desired_type != UserModel.current_type).all()
+        return jsonify([marshal(u.to_json(), user_resource_fields) for u in user_reqs])
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
