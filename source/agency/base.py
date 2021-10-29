@@ -187,3 +187,20 @@ srbija2.tourists.append(ana)
 srbija2.tourists.append(velja)
 srbija2.tourists.append(ceca)
 db.session.commit()
+
+#10
+srbija3 = ArangementModel(start_date = datetime.now() - timedelta(days=10),
+                           end_date = datetime.now() - timedelta(days=5),
+                           description = "Planinarenje",
+                           destination = "Serbia, Zeljin",
+                           number_of_seats = 3,
+                           free_seats = 0,
+                           price = 10,
+                           admin_id = 7
+)
+db.session.add(srbija3)
+srbija3.guide = marko
+srbija3.tourists.append(ana)
+srbija3.tourists.append(velja)
+srbija3.tourists.append(ceca)
+db.session.commit()

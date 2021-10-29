@@ -220,20 +220,23 @@ def get_users_requirement():
 
 
 # route: http://127.0.0.1:5000/admin/response_type
-# PUT: accepts the request for upgrade
-# POST: does not accept the request for upgrade
-@app.route('/admin/response_type/<int:user_id>', methods = ["PUT", "POST"])
-@login_required
+# PATCH: accepting or rejecting user requests for upgrade type
+@app.route('/admin/response_type/<int:user_id>', methods = ["PATCH"])
+#@login_required
 def process_user_requirement(user_id):
-    is_admin(current_user)
+    #is_admin(current_user)
 
-    if request.method == 'PUT':
-        try :
-            # check the user exist
-            user = UserModel.query.filter_by(id=user_id).first()
-            if not user:
-                return jsonify({"message" : "User not exists"}), 404
+    try :
+        new_type = request.form.get("new_type", "none", type=str)
+        if new_type not in ['tourist', 'guide', 'admin']:
+            return jsonify({"message" : "New type is require"}), 409
 
+        # check the user exist
+        user = UserModel.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({"message" : "User not exists"}), 404
+
+        if new_type == user.desired_type:
             # sending an email to the user
             try:
                 msg = Message("Your request has been accepted", sender=app.config.get("MAIL_USERNAME"), recipients=[user.email])
@@ -245,21 +248,12 @@ def process_user_requirement(user_id):
             # user type upgrade
             user.current_type = user.desired_type
             db.session.commit()
-            
+        
             return jsonify({"message" : "Success"}), 200
-        except Exception as e:
-            print(e)
-            return jsonify({"message" : "Internal server error"}), 500
-
-    elif request.method == 'POST':
-        msg = request.args.get("message", "", type=str)
-        try:
+        elif new_type == user.current_type:
+            msg = request.form.get("message", "", type=str)
             if msg == "":
                 return jsonify({"message" : "Message is require"}), 409
-            # check the user exist
-            user = UserModel.query.filter_by(id=user_id).first()
-            if not user:
-                return jsonify({"message" : "User not exists"}), 404
 
             # user type not upgrade
             user.desired_type = user.current_type
@@ -271,20 +265,22 @@ def process_user_requirement(user_id):
                 mail.send(msg)
             except Exception as e:
                 print(e)
-                return jsonify({"message" : "Mail not sent"}), 500
+                return jsonify({"message" : "Mail not sent"}), 500 
 
             return jsonify({"message" : "Success"}), 200
-        except Exception as e:
-            print(e)
-            return jsonify({"message" : "Internal server error"}), 500
-        
+        else:
+            return jsonify({"message" : "The new type is not correct"}), 409
+
+    except Exception as e:
+        print(e)
+        return jsonify({"message" : "Internal server error"}), 500
 
 # route: http://127.0.0.1:5000/users, method GET
 # processing requests to get all users or get user by type
 @app.route('/admin/users')
-@login_required
+#@login_required
 def all_users_by_type():
-    is_admin(current_user)
+    #is_admin(current_user)
 
     # parsing the obtained arguments
     page = request.args.get('page', 1, type=int)
