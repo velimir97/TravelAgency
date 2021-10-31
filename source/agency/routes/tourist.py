@@ -18,18 +18,16 @@ def is_tourist(user):
 # GET: takes all arrangements that the user can reserve
 # POST: reserve arrangement
 @app.route("/tourist/reserve_arrangement", methods = ["GET", "POST"])
-#@login_required
+@login_required
 def next_possible_arrangements():
-    #is_tourist(current_user)
+    is_tourist(current_user)
 
     if request.method == "GET":
         try:
-            tourist = UserModel.query.filter_by(id = 1).first()
+            tourist = UserModel.query.filter_by(id = current_user.id).first()
             my_arrangements = [a.id for a in tourist.tourist_arrangements]
 
             next_arrangements = ArrangementModel.query.filter(ArrangementModel.start_date > datetime.now() + timedelta(days=5), ArrangementModel.id.not_in(my_arrangements)).all()
-            for a in next_arrangements:
-                print(a)
             return jsonify([marshal(a.to_json(), arrangement_resource_fields) for a in next_arrangements])
         except Exception as e:
             print(e)
