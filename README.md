@@ -9,5 +9,12 @@ Execute in the terminal:
    git clone https://github.com/velimir97/TravelAgency
    cd TravelAgency
    pip install -r requirements.txt
+````
+Set your postgres username and password :
+   * TravelAgency/source/agency/\_\_init__.py: line 8
+   * TravelAgency/source/agency/base.py: line 9
+
+Run the program:
+````bash
    python3 source/run.py
 ````
