@@ -50,7 +50,7 @@ def next_possible_arrangements():
             if arrangement.start_date < datetime.now() + timedelta(days=5):
                 return jsonify({"message" : "You are late for this arrangement"}), 400
             # check for seats
-            if args['number_of_persons'] > arrangement.free_seats:
+            if number_of_persons > arrangement.free_seats:
                 return jsonify({"message" : "The arrangement is full"}), 400
             
             # update free_seats
