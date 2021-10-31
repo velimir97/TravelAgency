@@ -1,4 +1,4 @@
-from flask_restful import fields
+from flask_restful import fields as fld
 from agency.models import UserModel
 from marshmallow import Schema, fields, validate, validates, ValidationError, validates_schema
 
@@ -62,11 +62,11 @@ class UserUpdateSchema(Schema):
 
 # restriction on user return
 user_resource_fields = {
-    'id': fields.Integer,
-    'username': fields.String,
-    'name': fields.String,
-    'surname': fields.String,
-    'email': fields.String,
-    'desired_type': fields.String,
-    'current_type': fields.String,
+    'id': fld.Integer,
+    'username': fld.String,
+    'name': fld.String,
+    'surname': fld.String,
+    'email': fld.String,
+    'desired_type': fld.String,
+    'current_type': fld.String,
 }

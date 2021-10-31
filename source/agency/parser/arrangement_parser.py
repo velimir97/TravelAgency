@@ -1,4 +1,4 @@
-from flask_restful import fields
+from flask_restful import fields as fld
 from datetime import datetime, timedelta
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError
 
@@ -41,9 +41,9 @@ class ArrangementUpdateSchema(Schema):
 
 # restriction on arrangement return
 arrangement_resource_fields = {
-    'id': fields.Integer,
-    'start_date': fields.DateTime,
-    'end_date': fields.DateTime,
-    'destination': fields.String,
-    'price': fields.Integer,
+    'id': fld.Integer,
+    'start_date': fld.DateTime(),
+    'end_date': fld.DateTime,
+    'destination': fld.String,
+    'price': fld.Integer,
 }

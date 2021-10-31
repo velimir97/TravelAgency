@@ -64,7 +64,7 @@ class ArrangementModel(db.Model):
     free_seats = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
-        return f"Arrangement(start = {start_date}, end = {end_date}, description = {description})"
+        return f"Arrangement(start = {self.start_date}, end = {self.end_date}, description = {self.description})"
 
     def to_json(self):
         return {
