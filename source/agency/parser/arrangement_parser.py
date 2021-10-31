@@ -45,5 +45,5 @@ arrangement_resource_fields = {
     'start_date': fld.DateTime(),
     'end_date': fld.DateTime,
     'destination': fld.String,
-    'price': fld.Integer,
+    'price': fld.Integer
 }

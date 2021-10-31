@@ -157,7 +157,7 @@ def update_my_profile():
             if username:
                 tourist.username = username
             if password:
-                tourist.password = password
+                tourist.set_password(password)
             
             db.session.commit()
             return jsonify({"message": "Profile is updated!"}), 200

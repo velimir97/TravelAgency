@@ -71,5 +71,5 @@ user_resource_fields = {
     'surname': fld.String,
     'email': fld.String,
     'desired_type': fld.String,
-    'current_type': fld.String,
+    'current_type': fld.String
 }
