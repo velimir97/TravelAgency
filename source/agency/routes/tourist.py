@@ -17,7 +17,7 @@ def is_tourist(user):
 # route: http://127.0.0.1:5000/tourist/reserve_arrangement
 # GET: takes all arrangements that the user can reserve
 # POST: reserve arrangement
-@app.route("/tourist/reserve_arrangement", methods = ["GET", "POST"])
+@app.route("/tourist/next_arrangement", methods = ["GET", "POST"])
 @login_required
 def next_possible_arrangements():
     is_tourist(current_user)
@@ -120,9 +120,9 @@ def search_arrangements():
 # GET: retrieves tourist profile information
 # PUT: update tourist profile
 # PATCH: sends a request for promotion
-@app.route("/tourist/my_profile", methods = ["GET", "PUT","PATCH"])
+@app.route("/tourist/profile", methods = ["GET", "PUT","PATCH"])
 @login_required
-def update_my_profile():
+def update_profile():
     is_tourist(current_user)
 
     if request.method == "GET":

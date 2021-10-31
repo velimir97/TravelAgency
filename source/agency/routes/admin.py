@@ -44,15 +44,15 @@ def create_new_arrangement():
 
         db.session.add(arrangement)
         db.session.commit()
-        return jsonify({"message" : "Successful create arrangement"}), 201
+        return jsonify({"message" : "Successfully created arrangement"}), 201
     except Exception as e:
         print(e)
         return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/admin/free_guides/<int:arrangement_id>
-# GET: processing request to retrieving free guides at the time of the arrangement
-@app.route("/admin/free_guides/<int:arrangement_id>")
+# route: http://127.0.0.1:5000/admin/available_guides/<int:arrangement_id>
+# GET: processing request to retrieving available guides at the time of the arrangement
+@app.route("/admin/available_guides/<int:arrangement_id>")
 @login_required
 def free_guides(arrangement_id):
     is_admin(current_user)
@@ -113,7 +113,7 @@ def process_arrangement_by_id(arrangement_id):
 
             schema = ArrangementUpdateSchema()
 
-            # check if the form data is correct
+            # check if the data form is correct
             try:
                 schema.load(request.form)
             except ValidationError as e:
@@ -198,9 +198,9 @@ def process_arrangement_by_id(arrangement_id):
 
     return jsonify({"message" : "Method not found"}), 404
 
-# route: http://127.0.0.1:5000/admin/users_reqs
+# route: http://127.0.0.1:5000/admin/users_requests
 # GET: handles the retrieval request of users who want to upgrade the type
-@app.route('/admin/users_reqs')
+@app.route('/admin/users_requests')
 @login_required
 def get_users_requirement():
     is_admin(current_user)
@@ -214,9 +214,9 @@ def get_users_requirement():
         return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/admin/response_type
+# route: http://127.0.0.1:5000/admin/request_processing
 # PATCH: accepting or rejecting user requests for upgrade type
-@app.route('/admin/response_type/<int:user_id>', methods = ["PATCH"])
+@app.route('/admin/request_processing/<int:user_id>', methods = ["PATCH"])
 @login_required
 def process_user_requirement(user_id):
     is_admin(current_user)
@@ -224,7 +224,7 @@ def process_user_requirement(user_id):
     try :
         new_type = request.form.get("new_type", "none", type=str)
         if new_type not in ['tourist', 'guide', 'admin']:
-            return jsonify({"message" : "New type is require"}), 409
+            return jsonify({"message" : "New type is required"}), 409
 
         # check the user exist
         user = UserModel.query.filter_by(id=user_id).first()
@@ -248,7 +248,7 @@ def process_user_requirement(user_id):
         elif new_type == user.current_type:
             msg = request.form.get("message", None, type=str)
             if msg == None:
-                return jsonify({"message" : "Message is require"}), 409
+                return jsonify({"message" : "Message is required"}), 409
 
             # user type not upgrade
             user.desired_type = user.current_type

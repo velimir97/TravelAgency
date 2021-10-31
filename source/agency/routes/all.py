@@ -9,9 +9,9 @@ from math import ceil
 from marshmallow import ValidationError
 
 
-# route: http://127.0.0.1:5000/singin
+# route: http://127.0.0.1:5000/registration
 # POST: processing the request for registration of a new user 
-@app.route('/signin', methods=['POST'])
+@app.route('/registration', methods=['POST'])
 def user_registration():
     try:
         # check the form data is correct

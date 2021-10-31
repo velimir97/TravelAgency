@@ -45,9 +45,9 @@ def update_description(arrangement_id):
             return jsonify({"message" : "Internal server error"}), 500
 
 
-# route: http://127.0.0.1:5000/guide/type_req
+# route: http://127.0.0.1:5000/guide/type_request
 # POST: send a request for promotion
-@app.route("/guide/type_req", methods=["POST"])
+@app.route("/guide/type_request", methods=["POST"])
 @login_required
 def requirement_upgrade():
     is_guide(current_user)
