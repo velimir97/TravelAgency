@@ -43,9 +43,17 @@ def next_possible_arrangements():
             if number_of_persons == None:
                 return jsonify({"message" : "Number of persons is required"}), 409
 
+            if number_of_persons < 1:
+                return jsonify({"message" : "Invalid number of persons"}), 409
+
             user = UserModel.query.filter_by(id=current_user.id).first()
+            user_arrangements = [a.id for a in user.tourist_arrangements]
+            if arrangement_id in user_arrangements:
+                return jsonify({"message" : "Arrangement is already reserved"}), 409
 
             arrangement = ArrangementModel.query.filter_by(id=arrangement_id).first()
+            if not arrangement:
+                return jsonify({"message" : "Arrangement not found"}), 404
             # check to see if it's too late
             if arrangement.start_date < datetime.now() + timedelta(days=5):
                 return jsonify({"message" : "You are late for this arrangement"}), 400
@@ -152,7 +160,7 @@ def update_my_profile():
                 tourist.password = password
             
             db.session.commit()
-            return jsonify({"message": "Profil is update!"}), 200
+            return jsonify({"message": "Profile is updated!"}), 200
         except Exception as e:
             print(e)
             return jsonify({"message" : "Internal server error"}), 500
@@ -177,7 +185,7 @@ def update_my_profile():
 @app.route("/tourist/my_arrangements")
 @login_required
 def tourists_arrangements():
-    is_tourist()
+    is_tourist(current_user)
     try:
         user = UserModel.query.filter_by(id=current_user.id).first()
         tourist_arrangements = user.tourist_arrangements

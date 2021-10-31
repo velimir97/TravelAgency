@@ -56,8 +56,11 @@ class UserUpdateSchema(Schema):
 
     @validates_schema
     def validate_passwords_equal(self, data, **kwargs):
-        if data['password1'] != data['password2']:
-            raise ValidationError('Passwords are not equal')
+        if 'password1' in data and 'password2' in date:
+            if data['password1'] != data['password2']:
+                raise ValidationError('Passwords are not equal')
+        elif 'password1' in data or 'password2' in date:
+            raise ValidationError('Password1 and password2 are required together')
 
 
 # restriction on user return
