@@ -1,6 +1,6 @@
 from agency import app, db, mail
 from flask_login import login_required, current_user
-from flask_restful import abort, marshal_with, marshal
+from flask_restful import abort, marshal
 from agency.parser.arrangement_parser import arrangement_resource_fields, ArrangementSchema, ArrangementUpdateSchema
 from agency.parser.user_parser import user_resource_fields
 from agency.models import ArrangementModel, UserModel

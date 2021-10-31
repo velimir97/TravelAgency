@@ -1,5 +1,5 @@
 from agency import app, db
-from flask_restful import abort, marshal_with, marshal
+from flask_restful import abort, marshal
 from agency.parser.user_parser import user_resource_fields, UserSchema
 from agency.parser.arrangement_parser import arrangement_resource_fields
 from agency.models import UserModel, ArrangementModel
